@@ -1,12 +1,4 @@
 [
-  
-  {
-    "title": "Getting Started With the Portfolio Blog",
-    "dateCreated": "2026-06-02",
-    "link": "blogs/getting-started.html",
-    "summary": "A starter post showing the HTML blog format and how the JSON-driven blog section works.",
-    "tags": ["portfolio", "blog"]
-  },
   {
     "title": "Seeing, Thinking, Acting: Inside Kimi K2.5's Architecture",
     "dateCreated": "2026-03-17",
