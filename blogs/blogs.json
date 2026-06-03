@@ -2,7 +2,7 @@
   {
     "title": "ML System Design Series - Part 1: Machine Learning Systems in Production",
     "dateCreated": "2026-06-03",
-    "link": "ml-system-design-part-1.html",
+    "link": "blogs/ml-system-design-part-1.html",
     "summary": "An interactive introduction to ML system design: when to use ML, how production differs from research, and what reliable ML systems require.",
     "tags": ["ML system design", "machine learning", "production ML"],
     "external": false
