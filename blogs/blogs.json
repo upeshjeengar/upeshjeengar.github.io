@@ -1,5 +1,13 @@
 [
   {
+    "title": "ML System Design Series - Part 1: Machine Learning Systems in Production",
+    "dateCreated": "2026-06-03",
+    "link": "ml-system-design-part-1.html",
+    "summary": "An interactive introduction to ML system design: when to use ML, how production differs from research, and what reliable ML systems require.",
+    "tags": ["ML system design", "machine learning", "production ML"],
+    "external": false
+  },
+  {
     "title": "Seeing, Thinking, Acting: Inside Kimi K2.5's Architecture",
     "dateCreated": "2026-03-17",
     "link": "https://upesh-jeengar.medium.com/seeing-thinking-acting-inside-kimi-k2-5s-architecture-47d9ae239671",

@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ML System Design Series — Part 1: Machine Learning Systems in Production</title>
+  <meta name="description" content="An interactive blog post introducing ML system design: when to use ML, how production differs from research, and what reliable ML systems require." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand-mark" href="#top" aria-label="Go to top">
+        <span class="brand-logo" aria-hidden="true">ML</span>
+        <span>ML System Design Series</span>
+      </a>
+      <div class="top-actions">
+        <a class="pill" href="#fit-checker">Use-ML checker</a>
+        <button class="toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">🌙 Theme</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="hero-card">
+      <div class="hero-content">
+        <span class="eyebrow">Part 1 · Machine Learning Systems in Production</span>
+        <h1>ML is not a model. It is a system.</h1>
+        <p class="hero-lede">A production ML product is a living stack of data, interfaces, algorithms, infrastructure, hardware, monitoring, and business feedback loops. This first part sets the mental model for everything that follows.</p>
+        <div class="meta-row" aria-label="Article metadata">
+          <span class="meta-chip">⏱️ 12–15 min read</span>
+          <span class="meta-chip">🧭 Interactive guide</span>
+          <span class="meta-chip">📌 Based on Chapter 1</span>
+        </div>
+        <p class="caption" style="color: rgba(255,255,255,.72)">Hero image: server racks at NOIRLab Headquarters Computer Server Room, via Wikimedia Commons.</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="seriesLinks" data-include="ml-system-design-series-links.html">
+    <section class="series-section" aria-labelledby="seriesTitle">
+      <div class="series-inner">
+        <p class="section-kicker">Series index</p>
+        <h2 id="seriesTitle">ML System Design blogs</h2>
+        <ol class="series-list">
+          <li><a href="ml-system-design-part-1.html" aria-current="page">Part 1: Machine Learning Systems in Production</a></li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+
+  <div class="layout">
+    <main>
+      <section class="section flat" aria-label="Overview cards">
+        <div class="grid four">
+          <article class="card">
+            <span class="number">1</span>
+            <h3>When ML fits</h3>
+            <p>Use ML when a problem needs prediction from learnable, complex patterns in data — not because ML feels fashionable.</p>
+          </article>
+          <article class="card">
+            <span class="number">2</span>
+            <h3>System over algorithm</h3>
+            <p>The algorithm is a small part of the product. Data, infra, interfaces, and operations usually decide whether it works.</p>
+          </article>
+          <article class="card">
+            <span class="number">3</span>
+            <h3>Research ≠ production</h3>
+            <p>Leaderboards reward accuracy. Production systems must balance latency, reliability, fairness, cost, and maintainability.</p>
+          </article>
+          <article class="card">
+            <span class="number">4</span>
+            <h3>Iteration never ends</h3>
+            <p>Deploying is not the finish line. Monitoring, data refreshes, and business analysis keep the loop moving.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="definition">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">The core idea</p>
+            <h2>Machine learning is useful when rules become brittle.</h2>
+          </div>
+        </div>
+        <p class="lead">A practical way to think about ML: it learns complex patterns from existing data and uses those patterns to make predictions on data it has not seen before. Each phrase in that sentence is a requirement, not decoration.</p>
+
+        <div class="grid two" style="margin-top: 1.2rem; align-items: center;">
+          <div class="quote">
+            <strong>Rule of thumb:</strong> if a lookup table, SQL query, regex, or a simple heuristic solves the problem reliably and cheaply, start there. ML earns its place when explicit rules become too costly, too fragile, or too slow to update.
+          </div>
+          <figure class="image-card contain" style="margin:0">
+            <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Neural_network.svg" alt="Simplified artificial neural network diagram" loading="lazy" />
+            <figcaption>A neural network diagram is iconic, but the model graph is only one object inside a much larger production system.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" id="fit-checker">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Interactive</p>
+            <h2>Should this be an ML project?</h2>
+          </div>
+          <button class="ghost-btn" type="button" id="copyChecklist">Copy checklist</button>
+        </div>
+        <p class="lead">Check the conditions that are true for your use case. The score is intentionally conservative: it should push you to justify ML before investing in data, compute, infrastructure, and monitoring.</p>
+        <div class="fit-panel">
+          <div class="checklist" id="fitChecks">
+            <label class="check-item">
+              <input type="checkbox" data-weight="12" />
+              <span><strong>The system can learn from examples.</strong><small>You can show input-output examples or let the system learn safely online.</small></span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-weight="12" />
+              <span><strong>The pattern is too complex to hand-code.</strong><small>A lookup table or simple rule set is not enough.</small></span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-weight="12" />
+              <span><strong>There are real patterns to learn.</strong><small>The target is not essentially random, like a fair die roll.</small></span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-weight="12" />
+              <span><strong>Relevant data exists or can be collected.</strong><small>You have enough signal, usable labels, and permission to use the data.</small></span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-weight="10" />
+              <span><strong>The output is a prediction or ranking.</strong><small>Classification, forecasting, recommendation, scoring, detection, or generation can be framed as prediction.</small></span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-weight="10" />
+              <span><strong>Future inputs resemble training inputs.</strong><small>The deployment data is likely to share patterns with historical data.</small></span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-weight="8" />
+              <span><strong>The task repeats at scale.</strong><small>There will be enough predictions to justify upfront investment.</small></span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-weight="8" />
+              <span><strong>The cost of wrong predictions is manageable.</strong><small>Mistakes are cheap, reversible, or can be reviewed by humans.</small></span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-weight="8" />
+              <span><strong>The pattern changes over time.</strong><small>A data-driven model can adapt faster than a manually maintained rule system.</small></span>
+            </label>
+            <label class="check-item">
+              <input type="checkbox" data-weight="8" />
+              <span><strong>The use is ethical, legal, and explainable enough.</strong><small>Stakeholders understand the risks and affected users have appropriate safeguards.</small></span>
+            </label>
+          </div>
+          <aside class="score-box" aria-live="polite">
+            <p class="section-kicker">Fit score</p>
+            <div class="score-number"><span id="fitScore">0</span><span style="font-size:1.2rem; letter-spacing:0">/100</span></div>
+            <div class="meter" aria-hidden="true"><span id="fitMeter"></span></div>
+            <h3 id="fitTitle">Start with the problem, not the model.</h3>
+            <p id="fitAdvice">Select conditions to see whether ML is justified. A low score does not mean the idea is bad; it may mean a simpler system should come first.</p>
+            <span class="copy-status" id="copyStatus">Copied!</span>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section" id="use-cases">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Use cases</p>
+            <h2>Where ML shows up in real products</h2>
+          </div>
+        </div>
+        <p class="lead">Consumer ML is visible: search, recommendations, translation, smart assistants. Enterprise ML is often less visible but economically powerful: fraud detection, demand forecasting, churn prediction, routing, and process automation.</p>
+        <div class="filters" role="group" aria-label="Filter use cases">
+          <button class="ghost-btn filter-btn active" type="button" data-filter="all">All</button>
+          <button class="ghost-btn filter-btn" type="button" data-filter="consumer">Consumer</button>
+          <button class="ghost-btn filter-btn" type="button" data-filter="enterprise">Enterprise</button>
+          <button class="ghost-btn filter-btn" type="button" data-filter="high-stakes">High-stakes</button>
+        </div>
+        <div class="grid three" id="useCaseGrid">
+          <article class="card use-case" data-type="consumer">
+            <span class="icon">🔎</span><div><h3>Search and ranking</h3><p>Predict which result best matches a user’s intent.</p></div>
+          </article>
+          <article class="card use-case" data-type="consumer">
+            <span class="icon">🎬</span><div><h3>Recommendations</h3><p>Rank items a user is likely to watch, buy, read, or click.</p></div>
+          </article>
+          <article class="card use-case" data-type="consumer">
+            <span class="icon">🌐</span><div><h3>Machine translation</h3><p>Map meaning from one language to another at global scale.</p></div>
+          </article>
+          <article class="card use-case" data-type="consumer high-stakes">
+            <span class="icon">🏠</span><div><h3>Home health monitoring</h3><p>Detect events such as falls, with privacy and safety constraints.</p></div>
+          </article>
+          <article class="card use-case" data-type="enterprise">
+            <span class="icon">💳</span><div><h3>Fraud detection</h3><p>Flag anomalous transactions before losses compound.</p></div>
+          </article>
+          <article class="card use-case" data-type="enterprise">
+            <span class="icon">📈</span><div><h3>Demand forecasting</h3><p>Estimate future demand for inventory, budget, and staffing decisions.</p></div>
+          </article>
+          <article class="card use-case" data-type="enterprise">
+            <span class="icon">🎯</span><div><h3>Customer acquisition</h3><p>Identify likely buyers and time offers more precisely.</p></div>
+          </article>
+          <article class="card use-case" data-type="enterprise">
+            <span class="icon">🧭</span><div><h3>Support ticket routing</h3><p>Predict the right team so customers get answers faster.</p></div>
+          </article>
+          <article class="card use-case" data-type="enterprise high-stakes">
+            <span class="icon">⚕️</span><div><h3>Healthcare assistance</h3><p>Support diagnosis workflows under strict accuracy and privacy requirements.</p></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="system">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">System view</p>
+            <h2>The model is just one layer.</h2>
+          </div>
+        </div>
+        <p class="lead">When people say “ML system,” they often picture a model. In production, the system includes the user interface, the data stack, training and serving code, deployment infrastructure, monitoring, and the hardware that makes latency and throughput possible.</p>
+        <div class="grid two" style="align-items:start;">
+          <div class="system-stack" aria-label="ML system stack">
+            <div class="stack-layer"><strong>Interface</strong><span>How users, developers, and downstream services interact with predictions.</span></div>
+            <div class="stack-layer"><strong>Data</strong><span>Collection, storage, labels, validation, feature pipelines, privacy, and data quality.</span></div>
+            <div class="stack-layer algorithms"><strong>ML algorithms</strong><span>Model families, training objectives, features, evaluation, and optimization.</span></div>
+            <div class="stack-layer"><strong>Infrastructure</strong><span>Experiment tracking, CI/CD, model registry, deployment, monitoring, and incident response.</span></div>
+            <div class="stack-layer"><strong>Hardware</strong><span>CPUs, GPUs, memory, network, edge devices, autoscaling, and cost constraints.</span></div>
+          </div>
+          <figure class="image-card contain" style="margin:0">
+            <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Machine_Learning_Pipeline_in_Production.png" alt="An overview diagram of a machine learning pipeline in production" loading="lazy" />
+            <figcaption>Production pipelines connect more than training: data ingestion, model development, deployment, monitoring, and feedback all matter.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" id="data">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Mind vs data</p>
+            <h2>Data is not everything, but without it there is no ML system.</h2>
+          </div>
+        </div>
+        <p class="lead">The chapter frames a long-running debate: clever structure versus massive data and computation. In practical production work, the takeaway is not “ignore algorithms.” It is “do not treat data as an afterthought.”</p>
+        <div class="grid two" style="align-items:center;">
+          <div class="card">
+            <h3>A production data hierarchy</h3>
+            <div class="pyramid" aria-label="Data hierarchy pyramid">
+              <div class="pyramid-row">Collect</div>
+              <div class="pyramid-row">Move / Store</div>
+              <div class="pyramid-row">Clean / Transform</div>
+              <div class="pyramid-row">Label / Aggregate</div>
+              <div class="pyramid-row">Learn / Optimize</div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <h3>More data can still hurt</h3>
+              <p>Outdated records, wrong labels, leakage, biased sampling, duplicate users, and poisoned examples can degrade a model. Production data work is as much about filtering and governance as it is about volume.</p>
+            </div>
+            <div class="callout">
+              <span class="icon">🧪</span>
+              <div><strong>Ask during design reviews:</strong><p>What data would make this model worse? What data would be uniquely valuable? How will we know when the data distribution has changed?</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="research-production">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Research vs production</p>
+            <h2>Leaderboards optimize for a slice of reality.</h2>
+          </div>
+        </div>
+        <p class="lead">Research often starts from a clean benchmark and a single objective. Production starts from stakeholders with conflicting constraints and data that shifts under your feet.</p>
+        <div class="tabs">
+          <div class="tab-buttons" role="group" aria-label="Research production comparison tabs">
+            <button class="ghost-btn tab-btn active" type="button" data-tab="requirements">Requirements</button>
+            <button class="ghost-btn tab-btn" type="button" data-tab="compute">Compute</button>
+            <button class="ghost-btn tab-btn" type="button" data-tab="data">Data</button>
+            <button class="ghost-btn tab-btn" type="button" data-tab="fairness">Fairness</button>
+            <button class="ghost-btn tab-btn" type="button" data-tab="interpretability">Interpretability</button>
+          </div>
+          <div class="compare-grid" id="compareGrid">
+            <article class="compare-card research">
+              <h3>Research</h3>
+              <ul class="compare-list" id="researchList"></ul>
+            </article>
+            <article class="compare-card production">
+              <h3>Production</h3>
+              <ul class="compare-list" id="productionList"></ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="latency">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Computation</p>
+            <h2>Throughput gets you scale. Latency keeps users.</h2>
+          </div>
+        </div>
+        <p class="lead">Training workflows usually reward high throughput. User-facing inference cares deeply about latency: the time from request to response. Batching can improve throughput, but waiting for a batch can increase latency.</p>
+        <div class="calculator">
+          <div class="card">
+            <div class="field">
+              <label class="field-label" for="batchSize">Batch size <span id="batchSizeVal">16</span></label>
+              <input id="batchSize" type="range" min="1" max="256" value="16" />
+            </div>
+            <div class="field">
+              <label class="field-label" for="batchLatency">Model processing time per batch <span><span id="batchLatencyVal">40</span> ms</span></label>
+              <input id="batchLatency" type="range" min="5" max="500" value="40" />
+            </div>
+            <div class="field">
+              <label class="field-label" for="queueWait">Average queue wait <span><span id="queueWaitVal">10</span> ms</span></label>
+              <input id="queueWait" type="range" min="0" max="250" value="10" />
+            </div>
+            <p class="caption">Simplified model: throughput = batch size ÷ processing time. User latency = queue wait + processing time.</p>
+          </div>
+          <div class="calc-result" aria-live="polite">
+            <p class="section-kicker">Estimated user latency</p>
+            <div class="big-metric"><span id="latencyOut">50</span> ms</div>
+            <p id="latencyAdvice">Healthy for many interactive use cases. Keep watching tail latency.</p>
+            <div class="metric-grid">
+              <div class="mini-metric"><strong id="throughputOut">400</strong><span>queries / second</span></div>
+              <div class="mini-metric"><strong id="perItemOut">2.5</strong><span>ms compute / item</span></div>
+              <div class="mini-metric"><strong id="p99Out">100</strong><span>rough p99 proxy</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="callout">
+          <span class="icon">📊</span>
+          <div><strong>Do not report only averages.</strong><p>Production teams usually track p50, p90, p95, and p99 because a small tail of slow requests can represent your most valuable or most frustrated users.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="software">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Software 2.0</p>
+            <h2>ML systems are code + data + learned artifacts.</h2>
+          </div>
+        </div>
+        <p class="lead">Traditional software already teaches useful practices: modularity, testing, CI/CD, observability. ML adds new things to test and version: datasets, labels, features, trained weights, model behavior, and data distributions.</p>
+        <div class="triangle">
+          <div class="card"><div><span class="icon" aria-hidden="true">{} </span><strong>Code</strong><p>Training, serving, validation, data transforms, orchestration.</p></div></div>
+          <div class="card"><div><span class="icon" aria-hidden="true">🗃️</span><strong>Data</strong><p>Samples, labels, features, lineage, privacy, quality checks.</p></div></div>
+          <div class="card"><div><span class="icon" aria-hidden="true">🧠</span><strong>Artifacts</strong><p>Weights, feature stores, embeddings, configs, model cards.</p></div></div>
+        </div>
+        <div style="margin-top:1rem">
+          <details class="accordion" open>
+            <summary>Silent failures are common</summary>
+            <div>A service can return a prediction without crashing while the prediction is wrong, biased, stale, or no longer useful. That is why observability must include model behavior, not just HTTP 200s.</div>
+          </details>
+          <details class="accordion">
+            <summary>Data versioning is hard</summary>
+            <div>Changing data can change the model even when the code is identical. Reproducibility requires knowing exactly which data, labels, transformations, and parameters created an artifact.</div>
+          </details>
+          <details class="accordion">
+            <summary>Model size becomes an engineering constraint</summary>
+            <div>A large model may improve offline metrics but be too slow, expensive, or memory-hungry for the target device or service-level objective.</div>
+          </details>
+        </div>
+      </section>
+
+      <section class="section" id="requirements">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Design goals</p>
+            <h2>Four production requirements to design for early</h2>
+          </div>
+        </div>
+        <p class="lead">The chapter highlights four characteristics that most ML systems need: reliability, scalability, maintainability, and adaptability. Use the sliders to see how design priorities change.</p>
+        <div class="grid two" style="align-items:start;">
+          <div>
+            <details class="accordion" open>
+              <summary>Reliability</summary>
+              <div>The system should keep doing the right thing at the expected performance level even under faults, bad inputs, dependency failures, and human mistakes.</div>
+            </details>
+            <details class="accordion">
+              <summary>Scalability</summary>
+              <div>The system should handle growth in traffic, model count, model size, data volume, and operational complexity without heroic manual work.</div>
+            </details>
+            <details class="accordion">
+              <summary>Maintainability</summary>
+              <div>Different contributors should be able to understand, update, test, and debug their parts of the system without breaking the rest.</div>
+            </details>
+            <details class="accordion">
+              <summary>Adaptability</summary>
+              <div>The system should detect drift, accept improvements, and update models or data pipelines without unacceptable service disruption.</div>
+            </details>
+          </div>
+          <div class="card">
+            <h3>Stakeholder tension simulator</h3>
+            <div class="sliders" id="prioritySliders">
+              <div class="slider-card"><label class="field-label" for="accSlider">Model performance <span id="accVal">7</span></label><input id="accSlider" type="range" min="1" max="10" value="7"></div>
+              <div class="slider-card"><label class="field-label" for="latSlider">Low latency <span id="latVal">8</span></label><input id="latSlider" type="range" min="1" max="10" value="8"></div>
+              <div class="slider-card"><label class="field-label" for="fairSlider">Fairness / risk controls <span id="fairVal">8</span></label><input id="fairSlider" type="range" min="1" max="10" value="8"></div>
+              <div class="slider-card"><label class="field-label" for="maintSlider">Maintainability <span id="maintVal">6</span></label><input id="maintSlider" type="range" min="1" max="10" value="6"></div>
+            </div>
+            <div class="recommendation" id="priorityAdvice">Balance is key: start with a simple model, add monitoring, and only pay for complexity when it clears a business or risk threshold.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="process">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Lifecycle</p>
+            <h2>Production ML is a loop, not a line.</h2>
+          </div>
+        </div>
+        <p class="lead">The naive story is collect data → train model → deploy. The real story has backtracking: wrong labels, class imbalance, stale test data, changing business metrics, and monitoring signals that send you back to scoping.</p>
+        <div class="process-wrap">
+          <div class="process-buttons" role="group" aria-label="ML system lifecycle steps">
+            <button class="process-step active" type="button" data-step="scope"><span class="number">1</span><strong>Project scoping</strong></button>
+            <button class="process-step" type="button" data-step="data"><span class="number">2</span><strong>Data engineering</strong></button>
+            <button class="process-step" type="button" data-step="model"><span class="number">3</span><strong>Model development</strong></button>
+            <button class="process-step" type="button" data-step="deploy"><span class="number">4</span><strong>Deployment</strong></button>
+            <button class="process-step" type="button" data-step="monitor"><span class="number">5</span><strong>Monitoring & continual learning</strong></button>
+            <button class="process-step" type="button" data-step="business"><span class="number">6</span><strong>Business analysis</strong></button>
+          </div>
+          <article class="process-detail" id="processDetail" aria-live="polite"></article>
+        </div>
+      </section>
+
+      <section class="section" id="playbook">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Takeaway playbook</p>
+            <h2>How to use this chapter in your next design review</h2>
+          </div>
+        </div>
+        <div class="grid two">
+          <div class="card">
+            <h3>Before model development</h3>
+            <p>Define the business objective, prediction target, input data, labels, failure cost, latency budget, privacy constraints, fairness risks, and launch criteria.</p>
+          </div>
+          <div class="card">
+            <h3>During model development</h3>
+            <p>Track data versions, baselines, metrics, feature definitions, and error slices. Prefer the simplest model that clears the product bar.</p>
+          </div>
+          <div class="card">
+            <h3>Before deployment</h3>
+            <p>Run load tests, monitor tail latency, validate input schemas, plan fallbacks, and decide who owns incidents and model updates.</p>
+          </div>
+          <div class="card">
+            <h3>After deployment</h3>
+            <p>Monitor live performance, drift, fairness slices, cost, business KPIs, and user feedback. Treat insights as inputs to the next iteration.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <aside class="toc" aria-label="Table of contents">
+      <h2>In this post</h2>
+      <a href="#definition">Core idea</a>
+      <a href="#fit-checker">Use-ML checker</a>
+      <a href="#use-cases">Use cases</a>
+      <a href="#system">System view</a>
+      <a href="#data">Mind vs data</a>
+      <a href="#research-production">Research vs production</a>
+      <a href="#latency">Latency calculator</a>
+      <a href="#software">ML vs software</a>
+      <a href="#requirements">Requirements</a>
+      <a href="#process">Lifecycle loop</a>
+      <a href="#playbook">Playbook</a>
+      <a href="#references">Credits</a>
+    </aside>
+  </div>
+  <script src="script.js" defer></script>
+</body>
+</html>
