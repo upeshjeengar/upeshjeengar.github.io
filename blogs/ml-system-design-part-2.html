@@ -160,10 +160,10 @@
         <div class="section-head">
           <div>
             <p class="section-kicker">Data models</p>
-            <h2>A data model depends on who needs the data.</h2>
+            <h2>Data model depends on who needs the data.</h2>
           </div>
         </div>
-        <p class="lead">A data model is not the data itself. It is the shape of the data for a particular user, system, or purpose. The same object can be modeled differently depending on what the system needs to decide.</p>
+        <p class="lead">Data model is not the data itself. It is the shape of the data for a particular user, system, or purpose. The same object can be modeled differently depending on what the system needs to decide.</p>
 
         <div class="grid three">
           <article class="card">
@@ -326,7 +326,7 @@
         </div>
         <div class="grid two" style="align-items: center;">
           <div>
-            <p class="lead">In publish/subscribe architecture, a producer publishes events to a topic. Consumers subscribe to the topics they care about. The publisher does not need to know who receives the event.</p>
+            <p class="lead">In publish/subscribe architecture, a producer(microservice 1) publishes events to a topic. Consumers(microservice 2, microservice 3, etc.) subscribe to the topics they care about. The publisher does not need to know who receives the event.</p>
             <p>That pattern is why tools such as Apache Kafka, Amazon SNS, and Amazon Kinesis are common in data platforms. A single clickstream, payment event, or model prediction can feed analytics, monitoring, notifications, feature stores, and downstream products.</p>
             <div class="quote">
               Think of a topic like a channel. The publisher uploads once. Subscribers receive what they need without the publisher maintaining a private connection to each one.
@@ -340,7 +340,7 @@
 
         <div class="grid three" style="margin-top: 1.2rem;">
           <article class="card">
-            <h3>Topic</h3>
+            <h3>What is a Topic?</h3>
             <p>A named stream of events, such as orders-created, page-views, or model-predictions.</p>
           </article>
           <article class="card">
@@ -423,20 +423,7 @@
         </div>
       </section>
 
-      <section class="section" id="references">
-        <div class="section-head">
-          <div>
-            <p class="section-kicker">Credits</p>
-            <h2>Sources and image credits</h2>
-          </div>
-        </div>
-        <ul class="reference-list">
-          <li>Chapter 2 notes provided by the author.</li>
-          <li>Hero image: Data Center Fish Eye View (noirlab-racks-155), Wikimedia Commons.</li>
-          <li>Infrastructure image: Data center infrastructure in the United States, Wikimedia Commons.</li>
-          <li>Kafka image: Apache Kafka logo.svg, Wikimedia Commons.</li>
-        </ul>
-      </section>
+      
     </main>
 
     <aside class="toc" aria-label="Table of contents">
