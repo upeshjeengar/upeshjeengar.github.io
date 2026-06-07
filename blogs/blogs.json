@@ -24,6 +24,46 @@
     "external": true
   },
   {
+    "title": "Theoretical vs Practical GPU capacity",
+    "dateCreated": "2026-04-19",
+    "link": "https://x.com/UpeshStats/status/2045731221825823063",
+    "summary": "A technical look at the difference between theoretical and practical GPU capacity.",
+    "tags": ["AI", "LLM", "architecture", "Medium"],
+    "external": true
+  },
+  {
+    "title": "How TPUs Work: A Deep Dive into Google's Tensor Processing Units",
+    "dateCreated": "2025-12-05",
+    "link": "https://x.com/UpeshStats/status/1996875112986124339",
+    "summary": "A technical look at how TPUs function and their role in accelerating machine learning workloads.",
+    "tags": ["AI", "LLM", "architecture", "Medium"],
+    "external": true
+  },
+  {
+    "title": "Optimizers in Deep Learning",
+    "dateCreated": "2024-07-08",
+    "link": "https://x.com/UpeshStats/status/1810222362756812825",
+    "summary": "A technical look at different optimization algorithms used in deep learning.",
+    "tags": ["AI", "LLM", "architecture", "Medium"],
+    "external": true
+  },
+  {
+    "title": "Hyperparameters in Deep Learning",
+    "dateCreated": "2024-07-08",
+    "link": "https://x.com/UpeshStats/status/1810208127154819328",
+    "summary": "A technical look at different hyperparameter tuning strategies used in deep learning.",
+    "tags": ["AI", "LLM", "architecture", "Medium"],
+    "external": true
+  },
+  {
+    "title": "Regularization in Deep Learning",
+    "dateCreated": "2024-07-08",
+    "link": "https://x.com/UpeshStats/status/1807424303383617938",
+    "summary": "A technical look at different regularization techniques used in deep learning.",
+    "tags": ["AI", "LLM", "architecture", "Medium"],
+    "external": true
+  },
+  {
     "title": "Ensemble Techniques in Machine Learning",
     "dateCreated": "2024-06-09",
     "link": "https://upesh-jeengar.medium.com/ensemble-techniques-in-machine-learning-e008e4a7df1c",
