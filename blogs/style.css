@@ -165,7 +165,7 @@
       border: 1px solid var(--line);
       background:
         linear-gradient(135deg, rgba(8, 10, 24, 0.88), rgba(15, 20, 44, 0.62) 45%, rgba(20, 184, 166, 0.22)),
-        url('https://commons.wikimedia.org/wiki/Special:FilePath/NOIRLab_HQ_Server_Racks_%286V6A0404-CC%29.jpg') center / cover;
+        var(--hero-image, url('https://commons.wikimedia.org/wiki/Special:FilePath/NOIRLab_HQ_Server_Racks_%286V6A0404-CC%29.jpg')) center / cover;
     }
 
     .hero-content {
@@ -715,6 +715,79 @@
       padding-left: 1.1rem;
       color: var(--muted);
       font-size: .96rem;
+    }
+
+    .format-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .format-table th,
+    .format-table td {
+      padding: .9rem;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .format-table th {
+      color: var(--text);
+      background: var(--surface-2);
+      font-size: .9rem;
+    }
+
+    .format-table tr:last-child td { border-bottom: 0; }
+    .format-table td { color: var(--muted); }
+
+    .flow-line {
+      display: grid;
+      gap: .85rem;
+      margin-top: 1rem;
+    }
+
+    .flow-step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: .85rem;
+      align-items: start;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      padding: 1rem;
+    }
+
+    .flow-step .icon {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--brand) 14%, var(--surface));
+      color: var(--brand);
+      font-weight: 850;
+    }
+
+    .flow-step h3 { margin: 0 0 .25rem; }
+    .flow-step p { margin: 0; color: var(--muted); }
+
+    .decision-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .7rem;
+      margin-top: 1rem;
+    }
+
+    .decision-chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--surface-2) 70%, var(--surface));
+      padding: .55rem .8rem;
+      color: var(--muted);
+      font-weight: 700;
     }
 
     .copy-status { color: var(--ok); font-weight: 780; margin-left: .8rem; opacity: 0; transition: opacity .2s ease; }

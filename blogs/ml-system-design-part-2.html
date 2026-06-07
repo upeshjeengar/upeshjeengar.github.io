@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ML System Design Series - Part 2: Data Engineering, Storage, and Streaming</title>
+  <meta name="description" content="A practical ML system design guide to data formats, storage engines, data warehouses, data lakes, ACID transactions, APIs, brokers, pub/sub, and batch versus stream processing." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand-mark" href="#top" aria-label="Go to top">
+        <span class="brand-logo" aria-hidden="true">ML</span>
+        <span>ML System Design Series</span>
+      </a>
+      <div class="top-actions">
+        <a class="pill" href="#formats">Storage formats</a>
+        <a class="pill" href="#streaming">Batch vs stream</a>
+        <button class="toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">Dark theme</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="hero-card" style="--hero-image: url('https://commons.wikimedia.org/wiki/Special:FilePath/Data%20Center%20Fish%20Eye%20View%20%28noirlab-racks-155%29.jpg');">
+      <div class="hero-content">
+        <span class="eyebrow">Part 2 - Data Engineering, Storage, and Streaming</span>
+        <h1>Data is the first system design decision.</h1>
+        <p class="hero-lede">Before a model learns anything, data has to be shaped, stored, moved, queried, and trusted. This chapter turns storage formats, databases, APIs, brokers, pub/sub, and streaming into practical design choices.</p>
+        <div class="meta-row" aria-label="Article metadata">
+          <span class="meta-chip">12-15 min read</span>
+          <span class="meta-chip">Data systems guide</span>
+          <span class="meta-chip">Based on Chapter 2 notes</span>
+        </div>
+        <p class="caption" style="color: rgba(255,255,255,.72)">Hero image: NOIRLab data center fish-eye view, via Wikimedia Commons.</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="seriesLinks" data-include="ml-system-design-series-links.html">
+    <section class="series-section" aria-labelledby="seriesTitle">
+      <div class="series-inner">
+        <p class="section-kicker">Series index</p>
+        <h2 id="seriesTitle">ML System Design blogs</h2>
+        <ol class="series-list">
+          <li><a href="ml-system-design-part-1.html">Part 1: Machine Learning Systems in Production</a></li>
+          <li><a href="ml-system-design-part-2.html" aria-current="page">Part 2: Data Engineering, Storage, and Streaming</a></li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <div class="layout">
+    <main>
+      <section class="section flat" aria-label="Overview cards">
+        <div class="grid four">
+          <article class="card">
+            <span class="number">1</span>
+            <h3>Format is a tradeoff</h3>
+            <p>JSON, CSV, and Parquet are not just file types. They decide readability, storage cost, scan speed, and analytics performance.</p>
+          </article>
+          <article class="card">
+            <span class="number">2</span>
+            <h3>Models need storage</h3>
+            <p>Data models, normalization, warehouses, lakes, and ACID guarantees define how teams trust and reuse information.</p>
+          </article>
+          <article class="card">
+            <span class="number">3</span>
+            <h3>Services need flow</h3>
+            <p>REST, RPC, databases, brokers, and event buses are different answers to the same question: who needs this data, and when?</p>
+          </article>
+          <article class="card">
+            <span class="number">4</span>
+            <h3>Latency changes design</h3>
+            <p>Batch systems optimize throughput over time. Stream systems optimize freshness while data is still moving.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="foundation">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">The core idea</p>
+            <h2>Data engineering is the nervous system of an ML product.</h2>
+          </div>
+        </div>
+        <p class="lead">Modern applications collect data easily: phones, web apps, sensors, payments, logs, clicks, messages, and background jobs create a constant stream of signals. The hard part is not collecting data. The hard part is making data reliable enough that models, products, and people can use it without guessing what it means.</p>
+
+        <div class="grid two" style="margin-top: 1.2rem; align-items: center;">
+          <div class="quote">
+            <strong>Rule of thumb:</strong> storage format, schema, and dataflow choices are product decisions. A model trained on stale, inconsistent, or poorly transported data inherits those problems, no matter how clever the algorithm is.
+          </div>
+          <figure class="image-card">
+            <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Data%20center%20infrastructure%20in%20the%20United%20States.jpg" alt="Data center infrastructure with server racks and cabling" loading="lazy" />
+            <figcaption>Production data work lives in infrastructure: storage, networking, processing, monitoring, and ownership.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section" id="formats">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Storage formats</p>
+            <h2>Choose the file format based on access pattern.</h2>
+          </div>
+        </div>
+        <p class="lead">A format is a promise about how data will be written and read. Human-readable formats are convenient while debugging. Machine-optimized formats are better when volume, speed, and cost matter.</p>
+
+        <table class="format-table" aria-label="Comparison of common data formats">
+          <thead>
+            <tr>
+              <th>Format</th>
+              <th>Best use</th>
+              <th>Design tradeoff</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>JSON</strong></td>
+              <td>APIs, logs, semi-structured payloads, human inspection.</td>
+              <td>Flexible and readable, but verbose. It can waste space and slow down analytics scans.</td>
+            </tr>
+            <tr>
+              <td><strong>CSV</strong></td>
+              <td>Simple tabular exports and row-by-row ingestion.</td>
+              <td>Easy to write and share, but weak on types, nested data, and schema guarantees.</td>
+            </tr>
+            <tr>
+              <td><strong>Parquet</strong></td>
+              <td>Analytics, feature tables, large datasets, column-level queries.</td>
+              <td>Harder for humans to inspect, but compact and fast when queries touch only some columns.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="grid two" style="margin-top: 1.2rem;">
+          <article class="card">
+            <h3>Row-major thinking</h3>
+            <p>CSV stores records row by row. That works well when the system usually needs the whole record: user id, timestamp, item, price, and status together.</p>
+          </article>
+          <article class="card">
+            <h3>Column-major thinking</h3>
+            <p>Parquet stores values column by column. That shines when a query needs only a few features from a wide dataset with hundreds or thousands of columns.</p>
+          </article>
+        </div>
+
+        <div class="callout" style="margin-top: 1rem;">
+          <span class="icon">i</span>
+          <div>
+            <strong>Text versus binary</strong>
+            <p>Text formats are easier to read. Binary formats are built for machines. In production analytics, binary columnar formats usually reduce storage, network transfer, and query time.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="models">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Data models</p>
+            <h2>A data model depends on who needs the data.</h2>
+          </div>
+        </div>
+        <p class="lead">A data model is not the data itself. It is the shape of the data for a particular user, system, or purpose. The same object can be modeled differently depending on what the system needs to decide.</p>
+
+        <div class="grid three">
+          <article class="card">
+            <span class="number">A</span>
+            <h3>Consumer view</h3>
+            <p>A car listing highlights mileage, price, color, features, images, and financing options.</p>
+          </article>
+          <article class="card">
+            <span class="number">B</span>
+            <h3>Operations view</h3>
+            <p>A fleet system cares about vehicle id, service history, availability, location, and maintenance risk.</p>
+          </article>
+          <article class="card">
+            <span class="number">C</span>
+            <h3>Authority view</h3>
+            <p>A registration system cares about owner records, license plates, permits, and compliance status.</p>
+          </article>
+        </div>
+
+        <div class="grid two" style="margin-top: 1.2rem;">
+          <div>
+            <h3>Relational databases</h3>
+            <p>Relational systems organize data in tables. Rows have no inherent order, and relationships between entities are expressed through keys. They are strong when the schema is stable, consistency matters, and teams need reliable queries.</p>
+            <p><strong>Normalization</strong> organizes tables to reduce duplication and avoid anomalies: accidental corruption, inconsistent updates, or data loss caused by storing the same fact in too many places.</p>
+          </div>
+          <div>
+            <h3>Non-relational databases</h3>
+            <p>NoSQL systems often trade strict relational structure for flexible schema management, scale, or access patterns like documents, key-value lookups, graphs, or wide-column storage.</p>
+            <p>That flexibility is useful, but it moves responsibility into application code, data contracts, and operational discipline.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="warehouse-lake">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Warehouse vs lake</p>
+            <h2>Store clean answers and raw possibilities differently.</h2>
+          </div>
+        </div>
+        <div class="compare-grid">
+          <article class="compare-card research">
+            <h3>Data warehouse</h3>
+            <ul class="compare-list">
+              <li>Structured data prepared for analytics.</li>
+              <li>Optimized for reporting, dashboards, SQL, and business questions.</li>
+              <li>Best when users need trusted, repeatable answers.</li>
+            </ul>
+          </article>
+          <article class="compare-card production">
+            <h3>Data lake</h3>
+            <ul class="compare-list">
+              <li>Raw or semi-processed data in many formats.</li>
+              <li>Useful before preprocessing, feature engineering, or exploration.</li>
+              <li>Best when teams need flexibility and future reuse.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="decision-strip" aria-label="Warehouse and lake decision hints">
+          <span class="decision-chip">Need dashboards? Warehouse.</span>
+          <span class="decision-chip">Need raw logs? Lake.</span>
+          <span class="decision-chip">Need ML features? Often both.</span>
+          <span class="decision-chip">Need governance? Design it early.</span>
+        </div>
+      </section>
+
+      <section class="section" id="acid">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Transactions</p>
+            <h2>ACID is the reliability contract for database changes.</h2>
+          </div>
+        </div>
+        <p class="lead">A transaction is a unit of work over data: create, read, update, or delete. OLTP systems handle many of these operations every day. ACID properties explain what must stay true when transactions run, fail, or collide.</p>
+
+        <div class="grid four">
+          <article class="card">
+            <span class="number">A</span>
+            <h3>Atomicity</h3>
+            <p>All or nothing. If one step fails, the whole transaction rolls back.</p>
+          </article>
+          <article class="card">
+            <span class="number">C</span>
+            <h3>Consistency</h3>
+            <p>The database moves from one valid state to another valid state.</p>
+          </article>
+          <article class="card">
+            <span class="number">I</span>
+            <h3>Isolation</h3>
+            <p>Concurrent transactions should not corrupt or unexpectedly see each other's partial work.</p>
+          </article>
+          <article class="card">
+            <span class="number">D</span>
+            <h3>Durability</h3>
+            <p>Once committed, data survives crashes, restarts, and power loss.</p>
+          </article>
+        </div>
+
+        <div class="quote" style="margin-top: 1rem;">
+          In an ML system, ACID thinking matters anywhere labels, features, payments, user actions, or model decisions must be auditable. If a training record can silently disagree with product truth, debugging becomes guesswork.
+        </div>
+      </section>
+
+      <section class="section" id="dataflow">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Modes of dataflow</p>
+            <h2>Microservices need a way to exchange facts.</h2>
+          </div>
+        </div>
+        <p class="lead">When systems split into services, data has to move between them. The simplest design is direct communication. The scalable design often introduces a broker or event bus so services do not need to know about every other service.</p>
+
+        <div class="flow-line">
+          <div class="flow-step">
+            <span class="icon">1</span>
+            <div>
+              <h3>REST API</h3>
+              <p>A service exposes HTTP endpoints such as GET, POST, PUT, or DELETE. JSON is common because it is easy to send and debug.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <span class="icon">2</span>
+            <div>
+              <h3>RPC</h3>
+              <p>A remote procedure call feels like invoking a local function, but the work happens on another service with serialized parameters and responses.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <span class="icon">3</span>
+            <div>
+              <h3>Shared database</h3>
+              <p>One process writes and another reads. This can be simple, but it also couples services through schema, timing, and ownership.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <span class="icon">4</span>
+            <div>
+              <h3>Broker or event bus</h3>
+              <p>Services publish messages to a broker. Interested consumers subscribe, process, store, or forward the data without forcing one-to-one service wiring.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout" style="margin-top: 1rem;">
+          <span class="icon">!</span>
+          <div>
+            <strong>The direct-call problem</strong>
+            <p>One-to-one service connections increase latency, operational overhead, and debugging pain. When a dependency crashes, callers often learn only after timeout. Event-driven design gives systems a cleaner way to decouple producers from consumers.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="pubsub">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Pub/sub</p>
+            <h2>Publish once, let every subscriber react.</h2>
+          </div>
+        </div>
+        <div class="grid two" style="align-items: center;">
+          <div>
+            <p class="lead">In publish/subscribe architecture, a producer publishes events to a topic. Consumers subscribe to the topics they care about. The publisher does not need to know who receives the event.</p>
+            <p>That pattern is why tools such as Apache Kafka, Amazon SNS, and Amazon Kinesis are common in data platforms. A single clickstream, payment event, or model prediction can feed analytics, monitoring, notifications, feature stores, and downstream products.</p>
+            <div class="quote">
+              Think of a topic like a channel. The publisher uploads once. Subscribers receive what they need without the publisher maintaining a private connection to each one.
+            </div>
+          </div>
+          <figure class="image-card contain" style="margin:0">
+            <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Apache%20Kafka%20logo.svg" alt="Apache Kafka logo" loading="lazy" />
+            <figcaption>Apache Kafka is a common pub/sub and streaming backbone for event-driven data systems.</figcaption>
+          </figure>
+        </div>
+
+        <div class="grid three" style="margin-top: 1.2rem;">
+          <article class="card">
+            <h3>Topic</h3>
+            <p>A named stream of events, such as orders-created, page-views, or model-predictions.</p>
+          </article>
+          <article class="card">
+            <h3>Retention</h3>
+            <p>Messages are often kept for a fixed time before archival or deletion. Permanent storage might live in S3 or a data lake.</p>
+          </article>
+          <article class="card">
+            <h3>Queue alternative</h3>
+            <p>Message queues such as RabbitMQ or Amazon MQ are often better for one-to-one task processing and worker distribution.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="streaming">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Processing modes</p>
+            <h2>Batch and stream processing optimize different clocks.</h2>
+          </div>
+        </div>
+        <div class="compare-grid">
+          <article class="compare-card research">
+            <h3>Batch processing</h3>
+            <ul class="compare-list">
+              <li>Works over large chunks of historical data.</li>
+              <li>Good for daily metrics, offline training, backfills, and audits.</li>
+              <li>MapReduce is the classic example: read the dataset, process it, then return results.</li>
+            </ul>
+          </article>
+          <article class="compare-card production">
+            <h3>Stream processing</h3>
+            <ul class="compare-list">
+              <li>Processes events continuously as they arrive.</li>
+              <li>Good for alerts, fraud checks, recommendations, real-time features, and live dashboards.</li>
+              <li>Designed for low latency, but it requires more care around ordering, retries, and late data.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="grid two" style="margin-top: 1.2rem;">
+          <article class="card">
+            <h3>Where Spark fits</h3>
+            <p>Apache Spark is useful because it can handle both batch and streaming-style workloads. Its in-memory execution model makes many jobs faster than older disk-heavy processing patterns.</p>
+          </article>
+          <article class="card">
+            <h3>Where ML fits</h3>
+            <p>Training often starts as a batch job. Serving and monitoring often behave like streams. Mature ML systems usually need both clocks: historical learning and live reaction.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="playbook">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Design playbook</p>
+            <h2>Questions to ask before choosing a data architecture.</h2>
+          </div>
+        </div>
+        <div class="grid three">
+          <article class="card">
+            <h3>Before storage</h3>
+            <p>Who reads this data? Do they read whole records or a few columns? Is schema flexibility more important than consistency?</p>
+          </article>
+          <article class="card">
+            <h3>Before dataflow</h3>
+            <p>Does the consumer need an immediate response, or can it react to an event? How many consumers need the same data?</p>
+          </article>
+          <article class="card">
+            <h3>Before processing</h3>
+            <p>Is freshness measured in seconds, minutes, hours, or days? What happens when data arrives late or out of order?</p>
+          </article>
+        </div>
+
+        <div class="callout" style="margin-top: 1rem;">
+          <span class="icon">OK</span>
+          <div>
+            <strong>The practical answer</strong>
+            <p>Start with the simplest architecture that protects correctness. Add brokers, streams, binary formats, and distributed processing when volume, latency, reliability, or team boundaries make them necessary.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="references">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Credits</p>
+            <h2>Sources and image credits</h2>
+          </div>
+        </div>
+        <ul class="reference-list">
+          <li>Chapter 2 notes provided by the author.</li>
+          <li>Hero image: Data Center Fish Eye View (noirlab-racks-155), Wikimedia Commons.</li>
+          <li>Infrastructure image: Data center infrastructure in the United States, Wikimedia Commons.</li>
+          <li>Kafka image: Apache Kafka logo.svg, Wikimedia Commons.</li>
+        </ul>
+      </section>
+    </main>
+
+    <aside class="toc" aria-label="Table of contents">
+      <h2>In this post</h2>
+      <a href="#foundation">Core idea</a>
+      <a href="#formats">Storage formats</a>
+      <a href="#models">Data models</a>
+      <a href="#warehouse-lake">Warehouse vs lake</a>
+      <a href="#acid">ACID</a>
+      <a href="#dataflow">Dataflow</a>
+      <a href="#pubsub">Pub/sub</a>
+      <a href="#streaming">Batch vs stream</a>
+      <a href="#playbook">Playbook</a>
+      <a href="#references">Credits</a>
+    </aside>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

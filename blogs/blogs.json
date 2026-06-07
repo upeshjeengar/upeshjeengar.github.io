@@ -1,5 +1,13 @@
 [
   {
+    "title": "ML System Design Series - Part 2: Data Engineering, Storage, and Streaming",
+    "dateCreated": "2026-06-07",
+    "link": "blogs/ml-system-design-part-2.html",
+    "summary": "A practical guide to data formats, storage engines, data warehouses, data lakes, ACID transactions, APIs, brokers, pub/sub, and batch versus stream processing for ML systems.",
+    "tags": ["ML system design", "data engineering", "streaming"],
+    "external": false
+  },
+  {
     "title": "ML System Design Series - Part 1: Machine Learning Systems in Production",
     "dateCreated": "2026-06-03",
     "link": "blogs/ml-system-design-part-1.html",

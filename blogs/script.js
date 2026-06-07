@@ -12,9 +12,23 @@ async function loadIncludes() {
       // Keep fallback content for local file previews or offline reading.
     }
   }));
+  markCurrentSeriesLink();
+}
+
+function markCurrentSeriesLink() {
+  const currentFile = window.location.pathname.split("/").pop() || "ml-system-design-part-1.html";
+  $$("#seriesLinks a").forEach(link => {
+    const linkFile = link.getAttribute("href")?.split("/").pop();
+    if (linkFile === currentFile) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
+  });
 }
 
 loadIncludes();
+markCurrentSeriesLink();
 
 const progress = $("#progress");
 if (progress) {
