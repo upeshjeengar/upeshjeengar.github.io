@@ -29,7 +29,7 @@ const projects = [
     featured: true,
   },
   {
-    title: "Intelligent Loan Approval System",
+    title: "Explainable Loan Approval System",
     description:
       "Integrated logistic regression into a Spring application with feature engineering, TF-IDF, recursive feature elimination, and LLM-powered explainability.",
     tags: ["Java", "Spring", "ML", "Explainability"],
@@ -67,7 +67,7 @@ const projects = [
   {
     title: "GreentechEnergy",
     description:
-      "Business website for Greentech Energy Rajsamand, listed among pinned GitHub repositories.",
+      "Business website for Greentech Energy Rajsamand",
     tags: ["Web", "SCSS", "Business Site"],
     links: [{ label: "GitHub", url: "https://github.com/Upeshjeengar/GreentechEnergy" }],
   },
