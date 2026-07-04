@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ML System Design Series - Part 3: Training Data</title>
+  <meta name="description" content="A practical guide to training data for ML systems: sampling, labeling, weak supervision, active learning, class imbalance, and data augmentation." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand-mark" href="#top" aria-label="Go to top">
+        <span class="brand-logo" aria-hidden="true">ML</span>
+        <span>ML System Design Series</span>
+      </a>
+      <div class="top-actions">
+        <a class="pill" href="#sampling">Sampling</a>
+        <a class="pill" href="#labeling">Labeling</a>
+        <a class="pill" href="#augmentation">Augmentation</a>
+        <button class="toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">Dark theme</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="hero-card" style="--hero-image: url('https://commons.wikimedia.org/wiki/Special:FilePath/Data%20Science%20Concept%20-%20Data%20Pipeline.svg');">
+      <div class="hero-content">
+        <span class="eyebrow">Part 3 - Training Data</span>
+        <h1>Training data decides what the model can learn.</h1>
+        <p class="hero-lede">Real-world data is messy. It can contain collection bias, sampling bias, labeling mistakes, privacy constraints, imbalance, and noise. Before training begins, data has to be sampled, cleaned, labeled, split, and tested carefully.</p>
+        <div class="meta-row" aria-label="Article metadata">
+          <span class="meta-chip">12-15 min read</span>
+          <span class="meta-chip">Training data guide</span>
+          <span class="meta-chip">Based on Chapter 3 notes</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="seriesLinks" data-include="ml-system-design-series-links.html">
+    <section class="series-section" aria-labelledby="seriesTitle">
+      <div class="series-inner">
+        <p class="section-kicker">Series index</p>
+        <h2 id="seriesTitle">ML System Design blogs</h2>
+        <ol class="series-list">
+          <li><a href="ml-system-design-part-1.html">Part 1: Machine Learning Systems in Production</a></li>
+          <li><a href="ml-system-design-part-2.html">Part 2: Data Engineering, Storage, and Streaming</a></li>
+          <li><a href="ml-system-design-part-3.html" aria-current="page">Part 3: Training Data</a></li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <div class="layout">
+    <main>
+      <section class="section flat" aria-label="Overview cards">
+        <div class="grid four">
+          <article class="card">
+            <span class="number">1</span>
+            <h3>Sample carefully</h3>
+            <p>Sampling decides whether the training set represents the real problem or quietly bakes in selection bias.</p>
+          </article>
+          <article class="card">
+            <span class="number">2</span>
+            <h3>Label consistently</h3>
+            <p>Labels can be expensive, noisy, private, or inconsistent across sources, so problem definition matters.</p>
+          </article>
+          <article class="card">
+            <span class="number">3</span>
+            <h3>Handle imbalance</h3>
+            <p>If classes are heavily skewed, the model can become biased toward the majority class.</p>
+          </article>
+          <article class="card">
+            <span class="number">4</span>
+            <h3>Augment with care</h3>
+            <p>Synthetic examples help when they preserve the label and match the structure of the real task.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="foundation">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">The core idea</p>
+            <h2>Training data is not just collected. It is designed.</h2>
+          </div>
+        </div>
+        <p class="lead">Real-world data is messy and can have biases caused during collection, sampling, or labeling. Because of this, it often requires days of cleaning and processing before we can create representative train and test splits.</p>
+        <div class="quote">
+          A model learns from the data distribution it sees. If the sample is biased, the labels are noisy, or the split is not representative, the model will inherit those problems.
+        </div>
+      </section>
+
+      <section class="section" id="sampling">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Sampling</p>
+            <h2>For most ML problems, we train on a sample of available data.</h2>
+          </div>
+        </div>
+        <p class="lead">We usually cannot train on all the data present for a general ML problem. Instead, we create a sample and treat that sample as our full dataset. The sampling method decides what kinds of bias may enter the project.</p>
+
+        <div class="compare-grid">
+          <article class="compare-card research">
+            <h3>Non-probability sampling</h3>
+            <ul class="compare-list">
+              <li><strong>Convenience sampling:</strong> samples are selected based on availability.</li>
+              <li><strong>Snowball sampling:</strong> future samples are selected based on existing samples.</li>
+              <li><strong>Judgment sampling:</strong> experts decide which samples to include.</li>
+              <li><strong>Quota sampling:</strong> a fixed number of samples is taken from each group, such as age groups.</li>
+            </ul>
+          </article>
+          <article class="compare-card production">
+            <h3>Probability-based sampling</h3>
+            <ul class="compare-list">
+              <li><strong>Simple random sampling:</strong> randomly select a portion of all samples.</li>
+              <li><strong>Stratified sampling:</strong> divide data into important groups and sample from each group.</li>
+              <li><strong>Weighted sampling:</strong> assign sampling weights using domain knowledge.</li>
+              <li><strong>Reservoir sampling:</strong> keep a sample from continuously incoming data.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="callout" style="margin-top: 1rem;">
+          <span class="icon">!</span>
+          <div>
+            <strong>Selection bias</strong>
+            <p>Non-probability sampling can be a quick and easy way to gather initial data and get a project off the ground, but these samples are usually not representative of real-world data and can be riddled with selection bias.</p>
+          </div>
+        </div>
+
+        <div class="grid two" style="margin-top: 1.2rem;">
+          <article class="card">
+            <h3>Simple random sampling</h3>
+            <p>Randomly selecting 10% of all samples is simple, but rare categories may not appear. This can create a data imbalance problem for the ML model.</p>
+          </article>
+          <article class="card">
+            <h3>Stratified sampling</h3>
+            <p>Divide data into groups we care about, such as class A and class B, and then select a percentage of samples from each group.</p>
+          </article>
+        </div>
+
+        <h3>Weighted sampling</h3>
+        <p>In weighted sampling, each sample gets a weight based on domain knowledge or sampling requirements.</p>
+        <pre><code>random.choices(
+    population=[1, 2, 3, 4, 100, 1000],
+    weights=[0.2, 0.2, 0.2, 0.2, 0.1, 0.1],
+    k=2
+)  # pick two items with specified probabilities</code></pre>
+
+        <h3>Importance sampling</h3>
+        <p>Suppose a distribution is hard or costly to sample from, say <code>P(x)</code>. Instead, we sample from a convenient distribution <code>Q(x)</code> and reweight the examples.</p>
+        <pre><code>E_P[x] = sum_x P(x)x
+
+E_P[x] = sum_x Q(x)x * P(x) / Q(x)
+
+E_P[x] = E_Q[x * P(x) / Q(x)]</code></pre>
+        <p>In simple terms, imagine you want information about millionaires, but millionaires are hard to find and expensive to contact. Instead, you survey random people because they are easier to reach. Since that survey does not represent millionaires correctly, you give more weight to responses from people who are more likely to be millionaires and less weight to others. That is essentially importance sampling.</p>
+
+        <h3>Reservoir sampling</h3>
+        <p>Reservoir sampling is used for continually incoming data. For example, if you want a continuous sample of <code>k</code> tweets, first select the first <code>k</code> tweets and store them in an array. Then, for each incoming <code>n</code>th element, generate a random number <code>i</code> between 1 and <code>n</code>. If <code>i &lt;= k</code>, replace the <code>i</code>th element in the sample with the <code>n</code>th element.</p>
+      </section>
+
+      <section class="section" id="labeling">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Labeling</p>
+            <h2>For many tasks, natural labels are not available.</h2>
+          </div>
+        </div>
+        <p class="lead">For most tasks, natural labels are not available or not accessible, and we need to obtain labels by other means.</p>
+
+        <div class="grid three">
+          <article class="card">
+            <h3>Hand labels</h3>
+            <p>Hand labeling can be expensive if it requires subject matter experts. It can also be slow and may create privacy risks.</p>
+          </article>
+          <article class="card">
+            <h3>Label multiplicity</h3>
+            <p>Data from different sources or annotators can have different accuracy levels. To reduce disagreement, start with a clear problem definition.</p>
+          </article>
+          <article class="card">
+            <h3>Data lineage</h3>
+            <p>Mark the source of each data sample. This helps flag potential bias in the data and makes model debugging easier.</p>
+          </article>
+        </div>
+
+        <section class="subsection" id="weak-supervision">
+          <h3>Weak supervision</h3>
+          <p>Weak supervision relies on heuristics that can be developed with subject matter experts. For example, a doctor may look for a specific keyword in a report. A <strong>labeling function</strong> is a function that encodes such heuristics.</p>
+          <p>Possible heuristics include keyword rules, regular expressions, database lookups, and outputs from other models. A small, high-quality hand-labeled dataset can help you write better labeling functions.</p>
+          <figure class="image-card" style="margin-top: 1rem;">
+            <img src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*ie1EClV58YbYVR0vxno3pA.png" alt="Weak supervision illustration" loading="lazy" />
+            <figcaption>Weak supervision uses programmatic labeling rules to reduce manual labeling effort.</figcaption>
+          </figure>
+        </section>
+
+        <section class="subsection" id="semi-supervision">
+          <h3>Semi-supervision</h3>
+          <p>Semi-supervised learning is based on the assumption that small perturbations to a sample should not change its label. For example, if we add a small amount of white noise to an image, the label should usually remain the same. We can use this as a data augmentation technique when we have a small labeled dataset.</p>
+        </section>
+
+        <section class="subsection" id="transfer-learning">
+          <h3>Transfer learning</h3>
+          <p>Transfer learning adapts a model trained on a larger pool of knowledge to a smaller downstream task, such as adapting a language model to sentiment analysis or intent detection.</p>
+        </section>
+
+        <section class="subsection" id="active-learning">
+          <h3>Active learning</h3>
+          <p>Instead of randomly labeling data samples, active learning labels the samples that are most helpful to the model according to some heuristic.</p>
+          <figure class="image-card" style="margin-top: 1rem;">
+            <img src="https://towardsdatascience.com/wp-content/uploads/2021/10/1IBxUgfPXc6gv82ROsIqHrQ.png" alt="Active learning workflow" loading="lazy" />
+            <figcaption>Active learning focuses labeling effort on examples that are likely to improve the model.</figcaption>
+          </figure>
+          <p>Another common heuristic is based on disagreement among multiple candidate models. This method is called <strong>query-by-committee</strong>. You train several candidate models, often the same model with different hyperparameters. Each model votes on which examples should be labeled next, often based on uncertainty. You then label the examples that the committee disagrees on the most.</p>
+        </section>
+      </section>
+
+      <section class="section" id="imbalance">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Class imbalance</p>
+            <h2>Imbalanced classes can make the model prefer the majority class.</h2>
+          </div>
+        </div>
+        <p class="lead">Class imbalance happens when the number of samples in each class differs heavily. This can make the model biased toward the majority class.</p>
+
+        <div class="grid three">
+          <article class="card">
+            <span class="number">1</span>
+            <h3>Choose the right metric</h3>
+            <p>Decide whether the problem cares more about precision, recall, or another metric. For example, precision is <code>TP / (TP + FP)</code>, while recall is <code>TP / (TP + FN)</code>. ROC curves can help decide the model threshold.</p>
+          </article>
+          <article class="card">
+            <span class="number">2</span>
+            <h3>Use data-level methods</h3>
+            <p>Change the distribution of the data to make it less imbalanced. SMOTE creates synthetic minority-class samples by sampling convex combinations of existing minority-class points.</p>
+          </article>
+          <article class="card">
+            <span class="number">3</span>
+            <h3>Use robust algorithms</h3>
+            <p>Cost-sensitive learning penalizes misclassifying the minority class more heavily. In scikit-learn, <code>class_weight='balanced'</code> follows this idea.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="augmentation">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Data augmentation</p>
+            <h2>Augmentation increases training examples synthetically.</h2>
+          </div>
+        </div>
+        <p class="lead">Data augmentation is especially useful when we need more minority-class examples or when labeled data is limited. The key requirement is that the transformation should preserve the label.</p>
+
+        <div class="grid three">
+          <article class="card">
+            <h3>Label-preserving transformations</h3>
+            <p>For images, we can flip, crop, or rotate slightly while maintaining the same label. For text, we can replace words with similar words to create more sentences.</p>
+          </article>
+          <article class="card">
+            <h3>Perturbation</h3>
+            <p>Neural networks are sensitive to noise. In computer vision, even a single-pixel change can sometimes make a model misclassify an image.</p>
+          </article>
+          <article class="card">
+            <h3>Data synthesis</h3>
+            <p>In NLP, templates can generate many examples. In computer vision, methods such as mixup combine existing examples and labels.</p>
+          </article>
+        </div>
+
+        <figure class="image-card" style="margin-top: 1.2rem;">
+          <img src="https://ar5iv.labs.arxiv.org/html/1710.08864/assets/ourresults2.png" alt="Single pixel attack results on image classifiers" loading="lazy" />
+          <figcaption>The original image can be correctly classified, but a very small pixel-level perturbation can change the model prediction.</figcaption>
+        </figure>
+
+        <h3>Template-based synthesis</h3>
+        <p>In NLP, we can use a template such as: <code>Find me a [CUISINE] restaurant within [NUMBER] miles of [LOCATION].</code> Replacing those three placeholders creates many different sentences.</p>
+
+        <h3>Mixup</h3>
+        <p>In computer vision, one way to synthesize new data is to combine existing examples with discrete labels to generate continuous labels. Consider a task of classifying images as DOG, encoded as 0, and CAT, encoded as 1. From example <code>x1</code> with label DOG and example <code>x2</code> with label CAT, we can generate:</p>
+        <pre><code>x' = gamma * x1 + (1 - gamma) * x2
+
+label(x') = gamma * 0 + (1 - gamma) * 1</code></pre>
+        <p>This method is called mixup. The authors showed that mixup improves model generalization, reduces memorization of corrupt labels, increases robustness to adversarial examples, and stabilizes the training of generative adversarial networks.</p>
+      </section>
+
+      <section class="section" id="summary">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Summary</p>
+            <h2>Better training data leads to better ML systems.</h2>
+          </div>
+        </div>
+        <p class="lead">Training data is the foundation of machine learning, and its quality largely determines model performance. This blog discussed how to create effective training data through proper sampling methods and labeling techniques.</p>
+        <p>Since manual labeling can be expensive and time-consuming, alternatives such as weak supervision, semi-supervised learning, transfer learning, and active learning can reduce labeling effort. The blog also covered class imbalance, a common real-world challenge, and presented solutions such as resampling, appropriate evaluation metrics, and modified loss functions.</p>
+        <p>Finally, we covered data augmentation techniques for computer vision and NLP tasks to improve model accuracy and generalization. The next step after preparing training data is feature extraction.</p>
+      </section>
+    </main>
+
+    <aside class="toc" aria-label="Table of contents">
+      <h2>In this post</h2>
+      <a href="#foundation">Core idea</a>
+      <a href="#sampling">Sampling</a>
+      <a href="#labeling">Labeling</a>
+      <a href="#weak-supervision">Weak supervision</a>
+      <a href="#active-learning">Active learning</a>
+      <a href="#imbalance">Class imbalance</a>
+      <a href="#augmentation">Augmentation</a>
+      <a href="#summary">Summary</a>
+    </aside>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

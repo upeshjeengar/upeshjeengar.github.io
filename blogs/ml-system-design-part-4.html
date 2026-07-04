@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ML System Design Series - Part 4: Feature Engineering</title>
+  <meta name="description" content="A practical guide to feature engineering for ML systems: missing values, scaling, discretization, categorical encoding, feature crossing, positional embeddings, leakage, and feature importance." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand-mark" href="#top" aria-label="Go to top">
+        <span class="brand-logo" aria-hidden="true">ML</span>
+        <span>ML System Design Series</span>
+      </a>
+      <div class="top-actions">
+        <a class="pill" href="#missing-values">Missing values</a>
+        <a class="pill" href="#encoding">Encoding</a>
+        <a class="pill" href="#leakage">Leakage</a>
+        <button class="toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">Dark theme</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="hero-card" style="--hero-image: url('https://commons.wikimedia.org/wiki/Special:FilePath/Neural_network.svg');">
+      <div class="hero-content">
+        <span class="eyebrow">Part 4 - Feature Engineering</span>
+        <h1>Good features make models easier to train and trust.</h1>
+        <p class="hero-lede">In 2014, a Facebook paper claimed that having the right features was the most important thing in developing their ML models. Because of this, a large part of many ML engineering and data science jobs is coming up with useful features.</p>
+        <div class="meta-row" aria-label="Article metadata">
+          <span class="meta-chip">12-15 min read</span>
+          <span class="meta-chip">Feature engineering guide</span>
+          <span class="meta-chip">Based on Chapter 4 notes</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="seriesLinks" data-include="ml-system-design-series-links.html">
+    <section class="series-section" aria-labelledby="seriesTitle">
+      <div class="series-inner">
+        <p class="section-kicker">Series index</p>
+        <h2 id="seriesTitle">ML System Design blogs</h2>
+        <ol class="series-list">
+          <li><a href="ml-system-design-part-1.html">Part 1: Machine Learning Systems in Production</a></li>
+          <li><a href="ml-system-design-part-2.html">Part 2: Data Engineering, Storage, and Streaming</a></li>
+          <li><a href="ml-system-design-part-3.html">Part 3: Training Data</a></li>
+          <li><a href="ml-system-design-part-4.html" aria-current="page">Part 4: Feature Engineering</a></li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <div class="layout">
+    <main>
+      <section class="section flat" aria-label="Overview cards">
+        <div class="grid four">
+          <article class="card">
+            <span class="number">1</span>
+            <h3>Clean the inputs</h3>
+            <p>Missing values, scale differences, and categorical values have to be handled before many models can learn well.</p>
+          </article>
+          <article class="card">
+            <span class="number">2</span>
+            <h3>Represent meaning</h3>
+            <p>Encoding, discretization, feature crossing, and embeddings help convert raw values into useful model signals.</p>
+          </article>
+          <article class="card">
+            <span class="number">3</span>
+            <h3>Prevent leakage</h3>
+            <p>Features that accidentally contain label information can make validation look good and production fail.</p>
+          </article>
+          <article class="card">
+            <span class="number">4</span>
+            <h3>Keep features useful</h3>
+            <p>More features can improve performance, but they can also increase cost, latency, overfitting, and maintenance.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="foundation">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">The core idea</p>
+            <h2>Feature engineering is where domain knowledge enters the model.</h2>
+          </div>
+        </div>
+        <p class="lead">In deep learning, we often do not have to handcraft every feature because many features can be learned automatically by algorithms. Still, feature engineering remains important, especially when the model needs domain-specific processing such as text cleaning, text encoding, categorical handling, scaling, or leakage prevention.</p>
+        <div class="quote">
+          Learned features reduce manual work, but they do not remove the need to understand the data, the task, and the production environment.
+        </div>
+      </section>
+
+      <section class="section" id="missing-values">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Missing values</p>
+            <h2>Missingness has meaning, and the reason matters.</h2>
+          </div>
+        </div>
+        <p class="lead">Before handling missing values, first understand why the value is missing. Different missingness patterns lead to different risks.</p>
+
+        <table class="format-table" aria-label="Types of missing values">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Meaning</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>MNAR</strong></td>
+              <td>Missing not at random. The value is missing for reasons related to the value itself.</td>
+              <td>An unemployed person's income is not written.</td>
+            </tr>
+            <tr>
+              <td><strong>MAR</strong></td>
+              <td>Missing at random. The value is missing because of another observed variable.</td>
+              <td>People from a certain group may not like disclosing their age.</td>
+            </tr>
+            <tr>
+              <td><strong>MCAR</strong></td>
+              <td>Missing completely at random. There is no pattern in when the value is missing.</td>
+              <td>A field is randomly skipped because of a collection issue.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="compare-grid" style="margin-top: 1.2rem;">
+          <article class="compare-card research">
+            <h3>Deletion</h3>
+            <ul class="compare-list">
+              <li>Use row deletion when not many values are missing or when missingness is MCAR.</li>
+              <li>Use column deletion when more than 50% of values are missing.</li>
+              <li>The drawback is that you may remove important information and reduce model accuracy.</li>
+              <li>Removing rows can also create bias, especially when values are MAR.</li>
+            </ul>
+          </article>
+          <article class="compare-card production">
+            <h3>Imputation</h3>
+            <ul class="compare-list">
+              <li>The hard part is deciding which values to use for imputation.</li>
+              <li>You can fill a missing job field with an empty string.</li>
+              <li>You can use mean, mode, or median based on domain knowledge.</li>
+              <li>With imputation, you risk adding noise or causing data leakage.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="callout" style="margin-top: 1rem;">
+          <span class="icon">!</span>
+          <div>
+            <strong>There is no perfect way to handle missing values.</strong>
+            <p>With deletion, you risk losing important information or increasing bias. With imputation, you risk adding noise to the data, or worse, creating data leakage.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="common-operations">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Common operations</p>
+            <h2>Feature engineering often starts with scale, buckets, and categories.</h2>
+          </div>
+        </div>
+
+        <div class="grid three">
+          <article class="card">
+            <h3>Scaling</h3>
+            <p>We should keep the scale of columns similar for some ML models, such as linear models. Otherwise, the model may give more importance to a column with larger magnitude values, such as income, even if age is more important for the use case.</p>
+          </article>
+          <article class="card">
+            <h3>Discretization</h3>
+            <p>Discretization turns a continuous feature into a discrete feature. It is also known as quantization. For example, decimal-level income differences may not matter, so income can be grouped into lower, middle, and upper income buckets.</p>
+          </article>
+          <article class="card">
+            <h3>Choosing boundaries</h3>
+            <p>To choose category boundaries, we can use quantile plots, histograms, and domain knowledge.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="encoding">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Categorical features</p>
+            <h2>Categories are not always static.</h2>
+          </div>
+        </div>
+        <p class="lead">We might assume categories do not change over time. That can be true in many cases, but in recommendation systems, new product brands can appear and the model may not recommend them. The same goes for new product types, website domains, restaurants, companies, IP addresses, and many other categories.</p>
+
+        <div class="grid two" style="align-items: start;">
+          <article class="card">
+            <h3>The hashing trick</h3>
+            <p>The hashing trick generates a hash index for each category, so new categories can still be assigned into the prediction space.</p>
+            <p>The main problem is hash collision. Fortunately, the impact of colliding hashed features is often not too bad. In research by Booking.com, even with 50% colliding features, the performance loss was less than half a percent.</p>
+          </article>
+          <article class="card">
+            <h3>Feature crossing</h3>
+            <p>Feature crossing combines two or more features to generate new features. It helps model nonlinear relationships between variables and is especially useful for models that cannot learn nonlinear relationships well, such as linear regression, logistic regression, and some tree-based models.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="positional-embeddings">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Embeddings</p>
+            <h2>Position matters in language and vision.</h2>
+          </div>
+        </div>
+        <p class="lead">First introduced in <em>Attention Is All You Need</em> in 2017, positional embeddings have become a standard data engineering technique for many applications in computer vision and natural language processing.</p>
+        <p>We need positional embeddings because position changes meaning. "A dog bites a child" is very different from "A child bites a dog." The embedding size for positions is usually the same as the embedding size for words so that they can be summed.</p>
+
+        <pre><code>embedding("dog" at position 1)
+  = word_embedding("dog") + position_embedding(1)</code></pre>
+
+        <div class="grid two">
+          <article class="card">
+            <h3>Learned positional embeddings</h3>
+            <p>The model learns the best vector for each position during training. These positional embeddings usually start as random vectors.</p>
+          </article>
+          <article class="card">
+            <h3>Fixed positional embeddings</h3>
+            <p>The original Transformer used sine for even dimensions and cosine for odd dimensions.</p>
+          </article>
+        </div>
+
+        <pre><code>PE(pos, 2i)   = sin(pos / 10000^(2i / d_model))
+PE(pos, 2i+1) = cos(pos / 10000^(2i / d_model))
+
+position_embedding(pos) = [
+  sin(...),
+  cos(...),
+  sin(...),
+  cos(...),
+  ...
+]
+
+position 1: [sin(1), cos(1), sin(1/100), cos(1/100)]
+position 2: [sin(2), cos(2), sin(2/100), cos(2/100)]</code></pre>
+        <p>These positional vectors are added to the corresponding word embeddings and then passed to the model.</p>
+      </section>
+
+      <section class="section" id="leakage">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Data leakage</p>
+            <h2>Leakage makes validation look good and production fail.</h2>
+          </div>
+        </div>
+        <p class="lead">Data leakage happens when test data, or information that should not be available during inference, enters the training process unintentionally. Technically, data leakage refers to the phenomenon where a form of the label leaks into the set of features used for prediction, and that same information is not available during inference.</p>
+
+        <h3>Common causes of data leakage</h3>
+        <div class="grid three">
+          <article class="card">
+            <h3>Time-correlated data</h3>
+            <p>Splitting time-correlated data randomly instead of by time can leak future information into training. If time affects the label, split by time.</p>
+          </article>
+          <article class="card">
+            <h3>Preprocessing before splitting</h3>
+            <p>Scaling before splitting, or filling missing values with global statistics, lets information from validation or test data influence training.</p>
+          </article>
+          <article class="card">
+            <h3>Duplicates and correlated samples</h3>
+            <p>The same example, related patient scans, or collection-process artifacts can appear across train and test splits and accidentally reveal label information.</p>
+          </article>
+        </div>
+
+        <h3>Detecting data leakage</h3>
+        <p>Measure the correlation of each feature, and combinations of features, with the target variable. Investigate unusually high correlations to ensure they are valid and not caused by leakage. Some features may appear harmless individually but reveal target information when combined. For example, when predicting how long an employee will stay at a company, start date and end date together determine tenure.</p>
+        <p>Do ablation studies. If removing a feature significantly hurts performance, domain knowledge is needed to decide whether that feature is truly important. If a feature should not be important but removing it still causes performance to drop, it can be a sign of data leakage.</p>
+        <div class="callout" style="margin-top: 1rem;">
+          <span class="icon">i</span>
+          <div>
+            <strong>Feature jumps need investigation.</strong>
+            <p>If adding a new feature significantly improves model performance, either that feature is genuinely good, or it contains leaked information about the labels.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="good-features">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Engineering good features</p>
+            <h2>More features are not always better.</h2>
+          </div>
+        </div>
+        <p class="lead">Generally, adding more features can improve model performance. However, having too many features can be bad during both training and serving.</p>
+
+        <div class="grid four">
+          <article class="card">
+            <span class="number">1</span>
+            <h3>Leakage risk</h3>
+            <p>The chance of data leakage increases as the number of features grows.</p>
+          </article>
+          <article class="card">
+            <span class="number">2</span>
+            <h3>Overfitting</h3>
+            <p>Too many features can make the model memorize patterns that do not generalize.</p>
+          </article>
+          <article class="card">
+            <span class="number">3</span>
+            <h3>Serving cost</h3>
+            <p>More features can increase memory requirements, latency, and cost.</p>
+          </article>
+          <article class="card">
+            <span class="number">4</span>
+            <h3>Maintainability</h3>
+            <p>Large feature sets are harder to debug, update, and monitor.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="importance">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Feature importance</p>
+            <h2>Feature importance helps explain what the model is using.</h2>
+          </div>
+        </div>
+        <p class="lead">You can find feature importance statistically using bivariate analysis. More advanced methods include SHAP and InterpretML, an open-source package for interpretable models.</p>
+
+        <figure class="image-card" style="margin-top: 1rem;">
+          <img src="https://shap.readthedocs.io/en/latest/_images/shap_header.png" alt="SHAP explainable AI header" loading="lazy" />
+          <figcaption>In SHAP visualizations, feature contribution is related to the magnitude and direction of the values shown. Code examples are available in the official SHAP documentation.</figcaption>
+        </figure>
+
+        <figure class="image-card" style="margin-top: 1rem;">
+          <img src="https://i.sstatic.net/yLx4D.png" alt="InterpretML explanation chart" loading="lazy" />
+          <figcaption>InterpretML can help build models whose logic is easier to inspect.</figcaption>
+        </figure>
+
+        <table class="format-table" aria-label="SHAP versus InterpretML">
+          <thead>
+            <tr>
+              <th>SHAP</th>
+              <th>InterpretML (EBM)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Explains a model.</td>
+              <td>Is an interpretable model.</td>
+            </tr>
+            <tr>
+              <td>Post-hoc explanation.</td>
+              <td>Intrinsic explanation.</td>
+            </tr>
+            <tr>
+              <td>Answers: why did the model predict this?</td>
+              <td>Answers: let us build a model whose logic is visible.</td>
+            </tr>
+            <tr>
+              <td>Works on any model.</td>
+              <td>Primarily EBM.</td>
+            </tr>
+            <tr>
+              <td>Uses game theory.</td>
+              <td>Uses additive modeling.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="section" id="generalization">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Feature generalization</p>
+            <h2>Features should work on unseen data.</h2>
+          </div>
+        </div>
+        <p class="lead">Since the goal of an ML model is to make correct predictions on unseen data, the features used by the model should generalize to unseen data. Not all features generalize equally.</p>
+        <p>For example, for the task of predicting whether a comment is spam, the identifier of each comment is not generalizable and should not be used as a feature. However, the identifier of the user who posted the comment, such as a username, might still be useful for prediction.</p>
+      </section>
+    </main>
+
+    <aside class="toc" aria-label="Table of contents">
+      <h2>In this post</h2>
+      <a href="#foundation">Core idea</a>
+      <a href="#missing-values">Missing values</a>
+      <a href="#common-operations">Common operations</a>
+      <a href="#encoding">Categorical features</a>
+      <a href="#positional-embeddings">Embeddings</a>
+      <a href="#leakage">Data leakage</a>
+      <a href="#good-features">Good features</a>
+      <a href="#importance">Feature importance</a>
+      <a href="#generalization">Generalization</a>
+    </aside>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

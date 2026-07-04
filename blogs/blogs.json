@@ -1,5 +1,21 @@
 [
   {
+    "title": "ML System Design Series - Part 4: Feature Engineering",
+    "dateCreated": "2026-07-04",
+    "link": "blogs/ml-system-design-part-4.html",
+    "summary": "A practical guide to feature engineering for ML systems: missing values, scaling, discretization, categorical encoding, feature crossing, positional embeddings, leakage, and feature importance.",
+    "tags": ["ML system design", "feature engineering", "data leakage"],
+    "external": false
+  },
+  {
+    "title": "ML System Design Series - Part 3: Training Data",
+    "dateCreated": "2026-06-20",
+    "link": "blogs/ml-system-design-part-3.html",
+    "summary": "A practical guide to training data for ML systems: sampling, labeling, weak supervision, active learning, class imbalance, and data augmentation.",
+    "tags": ["ML system design", "training data", "data labeling"],
+    "external": false
+  },
+  {
     "title": "ML System Design Series - Part 2: Data Engineering, Storage, and Streaming",
     "dateCreated": "2026-06-07",
     "link": "blogs/ml-system-design-part-2.html",
