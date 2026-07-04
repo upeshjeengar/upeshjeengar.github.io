@@ -192,7 +192,7 @@ E_P[x] = E_Q[x * P(x) / Q(x)]</code></pre>
           <h3>Weak supervision</h3>
           <p>Weak supervision relies on heuristics that can be developed with subject matter experts. For example, a doctor may look for a specific keyword in a report. A <strong>labeling function</strong> is a function that encodes such heuristics.</p>
           <p>Possible heuristics include keyword rules, regular expressions, database lookups, and outputs from other models. A small, high-quality hand-labeled dataset can help you write better labeling functions.</p>
-          <figure class="image-card" style="margin-top: 1rem;">
+          <figure class="image-card contain" style="margin-top: 1rem;">
             <img src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*ie1EClV58YbYVR0vxno3pA.png" alt="Weak supervision illustration" loading="lazy" />
             <figcaption>Weak supervision uses programmatic labeling rules to reduce manual labeling effort.</figcaption>
           </figure>
@@ -211,7 +211,7 @@ E_P[x] = E_Q[x * P(x) / Q(x)]</code></pre>
         <section class="subsection" id="active-learning">
           <h3>Active learning</h3>
           <p>Instead of randomly labeling data samples, active learning labels the samples that are most helpful to the model according to some heuristic.</p>
-          <figure class="image-card" style="margin-top: 1rem;">
+          <figure class="image-card contain" style="margin-top: 1rem;">
             <img src="https://towardsdatascience.com/wp-content/uploads/2021/10/1IBxUgfPXc6gv82ROsIqHrQ.png" alt="Active learning workflow" loading="lazy" />
             <figcaption>Active learning focuses labeling effort on examples that are likely to improve the model.</figcaption>
           </figure>
@@ -271,7 +271,7 @@ E_P[x] = E_Q[x * P(x) / Q(x)]</code></pre>
           </article>
         </div>
 
-        <figure class="image-card" style="margin-top: 1.2rem;">
+        <figure class="image-card contain" style="margin-top: 1.2rem;">
           <img src="https://ar5iv.labs.arxiv.org/html/1710.08864/assets/ourresults2.png" alt="Single pixel attack results on image classifiers" loading="lazy" />
           <figcaption>The original image can be correctly classified, but a very small pixel-level perturbation can change the model prediction.</figcaption>
         </figure>
