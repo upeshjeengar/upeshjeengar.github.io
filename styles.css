@@ -444,6 +444,51 @@ code {
   align-items: start;
 }
 
+.resume-section {
+  scroll-margin-top: 76px;
+}
+
+.resume-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.resume-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.resume-viewer {
+  overflow: hidden;
+  min-height: 780px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  box-shadow: var(--shadow);
+}
+
+.resume-viewer object {
+  display: block;
+  width: 100%;
+  height: 780px;
+  background: #fff;
+}
+
+.resume-viewer p {
+  margin: 0;
+  padding: 24px;
+  color: var(--muted);
+}
+
+.resume-viewer p a {
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
 .contact-actions {
   display: grid;
   gap: 12px;
@@ -489,6 +534,11 @@ footer {
     grid-template-columns: 1fr;
     margin-top: 18px;
   }
+
+  .resume-heading {
+    align-items: start;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 640px) {
@@ -525,5 +575,11 @@ footer {
   .project-heading {
     align-items: start;
     flex-direction: column;
+  }
+
+  .resume-viewer,
+  .resume-viewer object {
+    min-height: 560px;
+    height: 560px;
   }
 }
