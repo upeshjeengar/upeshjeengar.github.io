@@ -8,6 +8,27 @@ const projects = [
     featured: true,
   },
   {
+    title: "Open Source: fast-rlm(Python)",
+    description:
+      "Contributed a merged robustness fix to fast-rlm so step-cost display handles missing usage cost safely for local, free, or unknown-cost runs instead of assuming every backend returns billable cost data.",
+    tags: ["Open Source", "TypeScript", "CLI", "LLM Tooling"],
+    links: [{ label: "Merged PR", url: "https://github.com/avbiswas/fast-rlm/pull/3" }],
+    featured: true,
+  },
+  {
+    title: "CompliFlow Lite",
+    description:
+      "Built a governed multi-agent enterprise workflow automation system that turns employee requests into auditable workflows or grounded policy answers, using RAG, deterministic guardrails, human approvals, and mocked Jira, ServiceNow, SAP Ariba, DocuSign, Okta, and Slack integrations.",
+    tags: ["Multi-Agent Systems", "RAG", "NVIDIA NIM", "Guardrails", "Enterprise Automation"],
+    links: [
+      {
+        label: "GitHub",
+        url: "https://github.com/upeshjeengar/enterprise-ai-automation",
+      },
+    ],
+    featured: true,
+  },
+  {
     title: "Solving PDEs Using Deep Learning",
     description:
       "B.Tech Project applying deep learning methods to partial differential equations, including Burgers' equation, the wave equation with external disturbances, and the Euler beam equation.",
@@ -18,22 +39,6 @@ const projects = [
         url: "https://github.com/upeshjeengar/Solving-Partial-Differntial-Equations-using-Deep-Learning",
       },
     ],
-    featured: true,
-  },
-  {
-    title: "CompliFlow Lite",
-    description:
-      "Built a governed multi-agent enterprise workflow automation system that turns employee requests into auditable workflows or grounded policy answers, using RAG, deterministic guardrails, human approvals, and mocked Jira, ServiceNow, SAP Ariba, DocuSign, Okta, and Slack integrations.",
-    tags: ["Multi-Agent Systems", "RAG", "NVIDIA NIM", "Guardrails", "Enterprise Automation"],
-    links: [],
-    featured: true,
-  },
-  {
-    title: "Open Source Contribution: fast-rlm",
-    description:
-      "Contributed a merged robustness fix to fast-rlm so step-cost display handles missing usage cost safely for local, free, or unknown-cost runs instead of assuming every backend returns billable cost data.",
-    tags: ["Open Source", "TypeScript", "CLI", "LLM Tooling"],
-    links: [{ label: "Merged PR", url: "https://github.com/avbiswas/fast-rlm/pull/3" }],
     featured: true,
   },
   {
