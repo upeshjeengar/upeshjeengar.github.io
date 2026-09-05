@@ -1,5 +1,29 @@
 [
   {
+    "title": "ML System Design Series - Part 7: Why ML Systems Fail in Production",
+    "dateCreated": "2026-09-05",
+    "link": "blogs/ml-system-design-part-7.html",
+    "summary": "A practical guide to natural labels, silent failures, train-serving skew, edge cases, degenerate feedback loops, distribution shifts, drift detection, and model adaptation.",
+    "tags": ["ML system design", "distribution shift", "production reliability"],
+    "external": false
+  },
+  {
+    "title": "ML System Design Series - Part 6: Model Deployment",
+    "dateCreated": "2026-09-05",
+    "link": "blogs/ml-system-design-part-6.html",
+    "summary": "A practical guide to production ML deployment: batch and online prediction, feature pipeline consistency, model compression, cloud and edge inference, compilers, and runtime optimization.",
+    "tags": ["ML system design", "model deployment", "inference optimization"],
+    "external": false
+  },
+  {
+    "title": "ML System Design Series - Part 5: Model Development and Offline Evaluation",
+    "dateCreated": "2026-09-05",
+    "link": "blogs/ml-system-design-part-5.html",
+    "summary": "A practical guide to framing ML problems, selecting and debugging models, tracking experiments, scaling training, and evaluating robustness, calibration, confidence, and critical data slices.",
+    "tags": ["ML system design", "model development", "model evaluation"],
+    "external": false
+  },
+  {
     "title": "ML System Design Series - Part 4: Feature Engineering",
     "dateCreated": "2026-07-04",
     "link": "blogs/ml-system-design-part-4.html",

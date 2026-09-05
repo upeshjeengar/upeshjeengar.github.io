@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ML System Design Series - Part 5: Model Development and Offline Evaluation</title>
+  <meta name="description" content="A practical guide to ML model development: problem framing, objective functions, model selection, ensembles, experiment tracking, debugging, distributed training, AutoML, baselines, calibration, and slice-based evaluation." />
+  <link rel="stylesheet" href="style.css?v=5" />
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand-mark" href="#top" aria-label="Go to top">
+        <span class="brand-logo" aria-hidden="true">ML</span>
+        <span>ML System Design Series</span>
+      </a>
+      <div class="top-actions">
+        <a class="pill" href="#framing">Framing</a>
+        <a class="pill" href="#development">Development</a>
+        <a class="pill" href="#offline-evaluation">Evaluation</a>
+        <button class="toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">Dark theme</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="hero-card" style="--hero-image: url('https://commons.wikimedia.org/wiki/Special:FilePath/Neural_network.svg');">
+      <div class="hero-content">
+        <span class="eyebrow">Part 5 - Model Development</span>
+        <h1>A strong model begins with the right problem.</h1>
+        <p class="hero-lede">Model development is more than selecting an algorithm. It is an iterative process of framing the task, choosing objectives, running reproducible experiments, debugging failures, and deciding whether offline evidence is strong enough for production.</p>
+        <div class="meta-row" aria-label="Article metadata">
+          <span class="meta-chip">25-30 min read</span>
+          <span class="meta-chip">Model development guide</span>
+          <span class="meta-chip">Based on Chapter 5 notes</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="seriesLinks" data-include="ml-system-design-series-links.html">
+    <section class="series-section" aria-labelledby="seriesTitle">
+      <div class="series-inner">
+        <p class="section-kicker">Series index</p>
+        <h2 id="seriesTitle">ML System Design blogs</h2>
+        <ol class="series-list">
+          <li><a href="ml-system-design-part-1.html">Part 1: Machine Learning Systems in Production</a></li>
+          <li><a href="ml-system-design-part-2.html">Part 2: Data Engineering, Storage, and Streaming</a></li>
+          <li><a href="ml-system-design-part-3.html">Part 3: Training Data</a></li>
+          <li><a href="ml-system-design-part-4.html">Part 4: Feature Engineering</a></li>
+          <li><a href="ml-system-design-part-5.html" aria-current="page">Part 5: Model Development and Offline Evaluation</a></li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <div class="layout">
+    <main>
+      <section class="section flat" aria-label="Overview cards">
+        <div class="grid four">
+          <article class="card">
+            <span class="number">1</span>
+            <h3>Frame the task</h3>
+            <p>Translate a broad product problem into inputs, outputs, objectives, and measurable constraints.</p>
+          </article>
+          <article class="card">
+            <span class="number">2</span>
+            <h3>Develop carefully</h3>
+            <p>Start simple, compare fairly, track every experiment, and debug one source of uncertainty at a time.</p>
+          </article>
+          <article class="card">
+            <span class="number">3</span>
+            <h3>Scale deliberately</h3>
+            <p>Use ensembles, distributed training, and AutoML only when their gains justify their operational cost.</p>
+          </article>
+          <article class="card">
+            <span class="number">4</span>
+            <h3>Evaluate beyond averages</h3>
+            <p>Test robustness, calibration, confidence, and critical data slices before trusting a model.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="foundation">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">The core idea</p>
+            <h2>The algorithm is only one decision in model development.</h2>
+          </div>
+        </div>
+        <p class="lead">After preparing training data and engineering features, we can begin developing the model. This stage is iterative: every run gives us evidence about the problem, the data, the implementation, and the production constraints.</p>
+        <p>A model can achieve a strong benchmark score and still be unsuitable for production. It may be too slow, expensive, unstable, difficult to explain, poorly calibrated, or weak on an important subgroup. The real goal is therefore not to find the most impressive algorithm. It is to find a model and operating setup that solve the intended problem reliably.</p>
+        <div class="quote">
+          A useful model is not simply the one with the highest offline score. It is the one whose behavior, cost, and failure modes fit the system around it.
+        </div>
+      </section>
+
+      <section class="section" id="framing">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Problem framing</p>
+            <h2>A business problem is not automatically an ML problem.</h2>
+          </div>
+        </div>
+        <p class="lead">Suppose a bank wants to make customer support faster. That request does not yet define what a model should learn. If the bottleneck is routing incoming requests, we can frame the task as predicting the correct department from the request text.</p>
+
+        <div class="flow-line">
+          <article class="flow-step">
+            <span class="icon">1</span>
+            <div><h3>Input</h3><p>Define what information will be available when a prediction is made, such as the text of a support request.</p></div>
+          </article>
+          <article class="flow-step">
+            <span class="icon">2</span>
+            <div><h3>Output</h3><p>Define what the system must produce, such as one of four destination departments.</p></div>
+          </article>
+          <article class="flow-step">
+            <span class="icon">3</span>
+            <div><h3>Objective</h3><p>Define what learning should optimize, such as reducing the difference between predicted and correct routes.</p></div>
+          </article>
+        </div>
+
+        <h3>Common task types</h3>
+        <div class="table-scroll">
+        <table class="format-table" aria-label="Common machine learning task types">
+          <thead>
+            <tr><th>Task</th><th>Output</th><th>Example</th><th>Main challenge</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Regression</strong></td><td>A continuous value</td><td>Predicting the price of a house</td><td>Selecting a loss and handling the scale of errors</td></tr>
+            <tr><td><strong>Binary classification</strong></td><td>One of two classes</td><td>Fraudulent or legitimate transaction</td><td>Choosing a threshold and balancing false positives against false negatives</td></tr>
+            <tr><td><strong>Multiclass classification</strong></td><td>Exactly one of several classes</td><td>Routing a request to one department</td><td>Class imbalance and confusing similar classes</td></tr>
+            <tr><td><strong>Multilabel classification</strong></td><td>Any number of applicable classes</td><td>Assigning topics to an article</td><td>Label disagreement and deciding how many labels to return</td></tr>
+          </tbody>
+        </table>
+        </div>
+
+        <h3>Cardinality changes the difficulty</h3>
+        <p>A multiclass problem with five classes is different from one with fifty thousand. High-cardinality classification requires enough examples for every class, including rare ones. A hierarchical design can reduce the difficulty: first predict a broad category, then predict a subgroup inside that category.</p>
+
+        <h3>The same product goal can have multiple ML formulations</h3>
+        <p>Consider predicting which app a person will open next. One formulation treats every installed app as a class and produces a probability distribution over all apps. This becomes difficult to maintain because adding a new app can change the model output space and require retraining.</p>
+        <p>A more flexible formulation scores each candidate app independently. The model receives user, environment, and app features, then returns a value representing how likely the person is to open that app. A new app becomes a new input candidate instead of a new output class.</p>
+        <div class="compare-grid">
+          <article class="compare-card research">
+            <h3>Classify across all apps</h3>
+            <ul class="compare-list">
+              <li>One prediction produces scores for every app.</li>
+              <li>The output dimension depends on the app catalog.</li>
+              <li>Adding classes can force architecture changes or retraining.</li>
+            </ul>
+          </article>
+          <article class="compare-card production">
+            <h3>Score each app</h3>
+            <ul class="compare-list">
+              <li>Each user-app pair receives one score.</li>
+              <li>The same model can evaluate new candidates.</li>
+              <li>Serving requires scoring and ranking multiple apps.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="objectives">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Objective functions</p>
+            <h2>The loss teaches the model what counts as a mistake.</h2>
+          </div>
+        </div>
+        <p class="lead">Supervised learning compares predictions with ground-truth labels. Regression commonly uses losses such as mean absolute error or root mean squared error, binary classification often uses log loss, and multiclass classification commonly uses cross-entropy.</p>
+        <pre><code>cross_entropy(y, p) = -sum(y[i] * log(p[i]))
+
+# If the correct class is politics:
+y = [0, 0, 0, 1]
+p = [0.45, 0.20, 0.02, 0.33]
+
+# Only the probability assigned to the correct class contributes:
+loss = -log(0.33)</code></pre>
+        <p>The objective function is a design decision, not a neutral implementation detail. When a product has several goals, forcing all of them into one weighted loss can make both training and maintenance harder.</p>
+
+        <h3>Decouple objectives when their behavior differs</h3>
+        <p>A newsfeed may need to remove spam, remove unsafe content, estimate quality, and predict engagement. Quality and engagement can conflict. One model could optimize a combined loss, but every change to the weights may require retraining.</p>
+        <pre><code>combined_loss = alpha * quality_loss + beta * engagement_loss</code></pre>
+        <p>An alternative is to train separate quality and engagement models, then combine their outputs during ranking.</p>
+        <pre><code>ranking_score = alpha * quality_score + beta * engagement_score</code></pre>
+        <p>This separation allows the team to adjust ranking weights without retraining both models. It also lets components evolve on different schedules. A spam detector may need frequent updates because attackers adapt quickly, while the definition of content quality may change more slowly.</p>
+      </section>
+
+      <section class="section" id="development">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Model selection</p>
+            <h2>Select for the real system, not only the validation set.</h2>
+          </div>
+        </div>
+        <p class="lead">Classical ML and neural networks are not mutually exclusive generations of technology. Tree-based models remain strong for structured data and strict latency limits, matrix factorization still supports recommendation systems, and simpler models often work alongside neural networks.</p>
+        <p>Compare candidates using the properties that matter for your application: predictive quality, label requirements, training cost, inference latency, memory use, interpretability, ease of deployment, and expected maintenance.</p>
+
+        <div class="grid three">
+          <article class="card"><span class="number">1</span><h3>Avoid the SOTA trap</h3><p>A model that leads a static academic benchmark may be too slow, expensive, or fragile for your data and serving environment.</p></article>
+          <article class="card"><span class="number">2</span><h3>Start simple</h3><p>A simple model validates the pipeline, gives you a baseline, and makes problems easier to isolate before complexity grows.</p></article>
+          <article class="card"><span class="number">3</span><h3>Compare fairly</h3><p>Human enthusiasm affects how much tuning each architecture receives. Use comparable data, budgets, search effort, and metrics.</p></article>
+          <article class="card"><span class="number">4</span><h3>Consider future gains</h3><p>The best model today may not remain best as data grows. Learning curves help show whether more examples are likely to help.</p></article>
+          <article class="card"><span class="number">5</span><h3>Evaluate trade-offs</h3><p>Accuracy competes with latency, compute, interpretability, and different error costs. The product decides which trade-off is acceptable.</p></article>
+          <article class="card"><span class="number">6</span><h3>Know assumptions</h3><p>A model is useful only when assumptions about the data and target are close enough to reality.</p></article>
+        </div>
+
+        <h3>Assumptions worth checking</h3>
+        <div class="table-scroll">
+        <table class="format-table" aria-label="Common machine learning model assumptions">
+          <thead><tr><th>Assumption</th><th>Question to ask</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Predictability</strong></td><td>Does the input contain enough information to predict the target at inference time?</td></tr>
+            <tr><td><strong>IID data</strong></td><td>Are examples drawn independently from a sufficiently stable distribution?</td></tr>
+            <tr><td><strong>Smoothness</strong></td><td>Should similar inputs normally produce similar outputs?</td></tr>
+            <tr><td><strong>Decision boundary</strong></td><td>Can the chosen model family represent the relationship in the data?</td></tr>
+            <tr><td><strong>Conditional independence</strong></td><td>For a model such as Naive Bayes, is the simplifying relationship between features reasonable enough?</td></tr>
+            <tr><td><strong>Distribution shape</strong></td><td>Does a statistical method depend on normality or another distribution that the data does not follow?</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </section>
+
+      <section class="section" id="ensembles">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Ensembles</p>
+            <h2>Different errors are more valuable than more models.</h2>
+          </div>
+        </div>
+        <p class="lead">An ensemble combines several base learners. For classification, the final decision can use majority voting; for regression, it can average predictions. The gain comes from diversity: when all base learners make the same errors, combining them adds little.</p>
+        <p>For intuition, suppose three independent classifiers are each correct 70% of the time. A majority vote is correct when all three are correct or exactly two are correct:</p>
+        <pre><code>P(ensemble correct)
+  = 0.7^3 + 3 * (0.7^2 * 0.3)
+  = 0.343 + 0.441
+  = 0.784</code></pre>
+        <p>The ensemble reaches 78.4% under the independence assumption. Perfectly correlated models would remain at 70%, which is why mixing different model families, features, or training samples can matter.</p>
+
+        <div class="grid three">
+          <article class="card">
+            <h3>Bagging</h3>
+            <p>Train learners on bootstrap samples created by sampling with replacement. Voting or averaging reduces variance and can stabilize models that overreact to the training set. Random forests add feature randomness to this idea.</p>
+          </article>
+          <article class="card">
+            <h3>Boosting</h3>
+            <p>Train weak learners sequentially, increasing attention on examples the current ensemble handles poorly. Gradient boosting, XGBoost, and LightGBM follow this family of ideas.</p>
+          </article>
+          <article class="card">
+            <h3>Stacking</h3>
+            <p>Train base learners, then train a meta-learner on their outputs. The combiner can be a simple average or another model such as logistic regression.</p>
+          </article>
+        </div>
+        <div class="callout">
+          <span class="icon">!</span>
+          <div><strong>Production cost still matters.</strong><p>Ensembles can improve predictive performance, but they increase serving latency, deployment complexity, monitoring needs, and maintenance. They are most attractive when a small quality gain has substantial value.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="experiments">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Experiment tracking</p>
+            <h2>A promising run is useful only if you can explain and reproduce it.</h2>
+          </div>
+        </div>
+        <p class="lead">Small changes in learning rate, data, code, or random initialization can produce very different results. Experiment tracking records what happened during a run; versioning records enough of the inputs and environment to recreate it later.</p>
+
+        <h3>Track the signals that help you decide or debug</h3>
+        <div class="grid two">
+          <article class="card"><h3>Model behavior</h3><p>Training and validation loss, task metrics such as F1 or perplexity, prediction examples, and artifacts such as curves or evaluation reports.</p></article>
+          <article class="card"><h3>Training behavior</h3><p>Learning rate, gradient norms, weight norms, throughput, steps or tokens per second, and checkpoint progress.</p></article>
+          <article class="card"><h3>System behavior</h3><p>CPU and GPU utilization, memory consumption, input pipeline speed, and evidence of resource bottlenecks.</p></article>
+          <article class="card"><h3>Reproducibility context</h3><p>Code revision, data version, configuration, dependency versions, hardware, random seed, and the command used to start the run.</p></article>
+        </div>
+        <p>Logging everything can become noisy. Track broadly enough to investigate failures, but make the few decision-critical metrics easy to find.</p>
+
+        <h3>Data versioning is harder than code versioning</h3>
+        <p>Datasets can be too large to duplicate, binary records do not produce useful line-by-line diffs, and data may not fit on every developer’s machine. Privacy rules can also require deletion of user records, making perfect historical reconstruction legally impossible. Reproducibility therefore depends on data identifiers, lineage, transformations, environment metadata, and retention policy, not only a Git commit.</p>
+      </section>
+
+      <section class="section" id="debugging">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Debugging</p>
+            <h2>ML systems can fail silently.</h2>
+          </div>
+        </div>
+        <p class="lead">Traditional software often fails with an exception or crash. An ML pipeline can complete normally, show decreasing loss, and still produce incorrect predictions. Validation is also slow because checking a fix may require retraining.</p>
+        <p>Failures may come from incompatible model assumptions, implementation mistakes, poor hyperparameters, incorrect labels, outdated normalization statistics, weak features, leakage, or infrastructure. These components are often owned by different teams, which makes diagnosis a system problem rather than only a modeling problem.</p>
+
+        <div class="flow-line">
+          <article class="flow-step">
+            <span class="icon">1</span>
+            <div><h3>Start with the smallest working model</h3><p>Add components gradually and measure what each one changes. Complexity introduced all at once creates too many possible failure points.</p></div>
+          </article>
+          <article class="flow-step">
+            <span class="icon">2</span>
+            <div><h3>Overfit one small batch</h3><p>Train and evaluate on a tiny sample. If the model cannot nearly memorize ten images or a small set of sentence pairs, investigate the implementation before tuning generalization.</p></div>
+          </article>
+          <article class="flow-step">
+            <span class="icon">3</span>
+            <div><h3>Control randomness</h3><p>Fix random seeds for initialization, shuffling, and stochastic layers while debugging. This helps separate code changes from random variation.</p></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="distributed-training">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Distributed training</p>
+            <h2>Scaling compute introduces new optimization problems.</h2>
+          </div>
+        </div>
+        <p class="lead">Large datasets may not fit in memory, and large models may not fit on one accelerator. The system then needs parallel preprocessing, shuffling, batching, communication, and checkpointing as well as a learning algorithm.</p>
+        <p>Gradient checkpointing trades additional computation for lower memory use by discarding selected activations during the forward pass and recomputing them during backpropagation. This can fit larger models or larger batches on the same hardware.</p>
+
+        <div class="compare-grid">
+          <article class="compare-card research">
+            <h3>Data parallelism</h3>
+            <ul class="compare-list">
+              <li>Each worker holds a copy of the model.</li>
+              <li>Workers train on different data batches.</li>
+              <li>Gradients must be combined across workers.</li>
+              <li>Synchronous updates suffer from stragglers.</li>
+              <li>Asynchronous updates risk stale gradients.</li>
+            </ul>
+          </article>
+          <article class="compare-card production">
+            <h3>Model parallelism</h3>
+            <ul class="compare-list">
+              <li>Different model components live on different workers.</li>
+              <li>Dependencies between layers can leave workers idle.</li>
+              <li>Pipeline parallelism splits batches into micro-batches.</li>
+              <li>Communication and scheduling become part of model performance.</li>
+              <li>It can be combined with data parallelism.</li>
+            </ul>
+          </article>
+        </div>
+        <p>A larger number of workers also creates a larger effective batch size. Increasing the learning rate can compensate up to a point, but very large batches eventually provide diminishing returns and can destabilize optimization. Hardware utilization, network communication, and workload balance must be measured together.</p>
+      </section>
+
+      <section class="section" id="automl">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">AutoML</p>
+            <h2>Automation ranges from tuning parameters to designing models.</h2>
+          </div>
+        </div>
+        <p class="lead">The most common production form of AutoML is hyperparameter tuning. Learning rate, batch size, depth, hidden dimensions, dropout, optimizer settings, and numerical precision can all change performance substantially.</p>
+        <div class="table-scroll">
+        <table class="format-table" aria-label="AutoML approaches">
+          <thead><tr><th>Approach</th><th>What it searches</th><th>Trade-off</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Grid search</strong></td><td>A predefined combination of parameter values</td><td>Simple, but expensive as dimensions grow</td></tr>
+            <tr><td><strong>Random search</strong></td><td>Random configurations from specified distributions</td><td>Often explores large spaces more efficiently than a grid</td></tr>
+            <tr><td><strong>Bayesian optimization</strong></td><td>Configurations selected using results from previous trials</td><td>Sample-efficient, but adds optimization complexity</td></tr>
+            <tr><td><strong>Architecture search</strong></td><td>Operations, connections, layers, and model structure</td><td>Powerful, but computationally expensive</td></tr>
+            <tr><td><strong>Learned optimizer</strong></td><td>The rule used to update another model</td><td>Promising research with a high upfront training cost</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="callout">
+          <span class="icon">!</span>
+          <div><strong>Keep the test set out of the search loop.</strong><p>Select hyperparameters using validation performance. Use the test split only for the final, less-biased estimate. Repeatedly choosing configurations based on test results turns the test set into another training signal.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="phases">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Development phases</p>
+            <h2>Earn complexity one phase at a time.</h2>
+          </div>
+        </div>
+        <div class="flow-line">
+          <article class="flow-step"><span class="icon">1</span><div><h3>Before ML</h3><p>Try rules, ordering, retrieval, or another simple heuristic. A non-ML solution may already solve enough of the problem.</p></div></article>
+          <article class="flow-step"><span class="icon">2</span><div><h3>Simplest ML model</h3><p>Use an interpretable, easy-to-deploy model to validate the framing, labels, features, training pipeline, and serving path.</p></div></article>
+          <article class="flow-step"><span class="icon">3</span><div><h3>Optimize simple models</h3><p>Improve objectives, features, data, hyperparameters, and ensembles after the end-to-end framework is trusted.</p></div></article>
+          <article class="flow-step"><span class="icon">4</span><div><h3>Complex systems</h3><p>Move to heavier architectures only after simpler approaches reach their limit and the use case justifies a meaningful gain.</p></div></article>
+        </div>
+        <p>Each phase produces the baseline for the next. This makes the value of added complexity measurable instead of assumed.</p>
+      </section>
+
+      <section class="section" id="offline-evaluation">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Offline evaluation</p>
+            <h2>A metric has meaning only in comparison.</h2>
+          </div>
+        </div>
+        <p class="lead">Offline evaluation estimates whether a model is ready for production while ground truth is still available. It cannot reproduce every production condition, but it should eliminate models that are inaccurate, fragile, unfair, or operationally unsuitable.</p>
+
+        <h3>Establish useful baselines</h3>
+        <div class="grid three">
+          <article class="card"><h3>Random</h3><p>Compare against uniform random predictions and predictions sampled from the observed label distribution.</p></article>
+          <article class="card"><h3>Simple heuristic</h3><p>Measure a rule that uses domain knowledge but no learned model, such as ranking feed items by recency.</p></article>
+          <article class="card"><h3>Zero rule</h3><p>Always predict the most common class. This exposes misleading scores on imbalanced datasets.</p></article>
+          <article class="card"><h3>Human</h3><p>Compare with the people whose work the system will automate or support, especially for high-stakes tasks.</p></article>
+          <article class="card"><h3>Existing solution</h3><p>Measure the current rules, vendor, workflow, or production model. A slightly less accurate model may still win on cost or usability.</p></article>
+          <article class="card"><h3>Previous phase</h3><p>Use the strongest simpler solution as the baseline for the next development phase.</p></article>
+        </div>
+        <p>A strong F1 score can still be meaningless if a random or majority-class predictor achieves the same result. Always report what the model beats, by how much, and at what additional cost.</p>
+      </section>
+
+      <section class="section" id="evaluation-tests">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Behavioral tests</p>
+            <h2>Test how predictions change, not only whether they are correct.</h2>
+          </div>
+        </div>
+        <p class="lead">Production inputs are often noisier than development data. Behavioral evaluation makes controlled changes to examples and checks whether the model reacts in a sensible way.</p>
+        <div class="grid three">
+          <article class="card">
+            <h3>Perturbation tests</h3>
+            <p>Add realistic noise, crop an audio clip, alter compression, introduce a typo, or vary image quality. Prefer models that remain reliable under the disturbances expected in production.</p>
+          </article>
+          <article class="card">
+            <h3>Invariance tests</h3>
+            <p>Change information that should not affect the outcome. A resume score should not change because a name is replaced, and a lending result should not depend on a protected attribute.</p>
+          </article>
+          <article class="card">
+            <h3>Directional tests</h3>
+            <p>Change a feature whose effect should be predictable. With everything else fixed, increasing a house lot size should not reduce the predicted price without a defensible reason.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="calibration">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Calibration and confidence</p>
+            <h2>A probability should describe how often the event happens.</h2>
+          </div>
+        </div>
+        <p class="lead">If a model assigns 70% probability to many events, a calibrated model should be correct on about 70% of those events. A model can rank candidates correctly while still producing misleading probabilities.</p>
+        <p>Calibration matters when probabilities drive decisions: estimating ad clicks, allocating risk, deciding whether a human should review a case, or making recommendations that reflect a user’s actual preferences. Reliability curves compare predicted probabilities with observed frequencies. Methods such as Platt scaling can recalibrate a classifier using held-out data.</p>
+        <pre><code># Conceptual calibration check
+for probability_bucket in buckets:
+    predicted = mean(model_probability)
+    observed = mean(actual_outcome)
+    compare(predicted, observed)</code></pre>
+        <h3>Confidence is an instance-level decision</h3>
+        <p>Overall accuracy summarizes a population. Confidence asks whether one prediction is reliable enough to use. For low-confidence cases, the system needs an explicit policy: abstain, request more information, fall back to a rule, or route the case to a human.</p>
+        <div class="decision-strip" aria-label="Low confidence actions">
+          <span class="decision-chip">Return prediction</span>
+          <span class="decision-chip">Ask for more input</span>
+          <span class="decision-chip">Use a fallback</span>
+          <span class="decision-chip">Request human review</span>
+          <span class="decision-chip">Abstain safely</span>
+        </div>
+      </section>
+
+      <section class="section" id="slices">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Slice-based evaluation</p>
+            <h2>Overall performance can hide the failures that matter most.</h2>
+          </div>
+        </div>
+        <p class="lead">A slice is a meaningful subgroup of the evaluation data, such as mobile users, a geographic region, a device type, paid customers, a demographic group, or an uncommon class.</p>
+        <p>Imagine that 90% of examples belong to a majority group. Model A reaches 98% accuracy on that group but only 80% on the minority group, for 96.2% overall. Model B reaches 95% on both groups, for 95% overall. Selecting only by overall accuracy favors Model A and hides a large subgroup failure.</p>
+        <div class="table-scroll">
+        <table class="format-table" aria-label="Slice-based model comparison">
+          <thead><tr><th>Model</th><th>Majority slice</th><th>Minority slice</th><th>Overall</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Model A</strong></td><td>98%</td><td>80%</td><td>96.2%</td></tr>
+            <tr><td><strong>Model B</strong></td><td>95%</td><td>95%</td><td>95%</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p>Slices can also have different business importance. In churn prediction, performance on paying customers may matter more than performance on free accounts. Aggregation can even reverse subgroup trends, a phenomenon known as Simpson’s paradox. Therefore, inspect both overall and slice-level evidence before choosing a model.</p>
+
+        <h3>How to discover critical slices</h3>
+        <div class="grid three">
+          <article class="card"><h3>Domain heuristics</h3><p>Use product and subject-matter knowledge to define likely differences such as browser, location, device, language, or customer tier.</p></article>
+          <article class="card"><h3>Error analysis</h3><p>Review misclassified examples manually and look for repeated characteristics that aggregate metrics conceal.</p></article>
+          <article class="card"><h3>Automated discovery</h3><p>Generate candidate slices using clustering, search, or decision-based methods, then rank the groups with unusually poor or unusual behavior.</p></article>
+        </div>
+        <div class="callout">
+          <span class="icon">i</span>
+          <div><strong>Not every slice failure is a model failure.</strong><p>Poor mobile performance may reveal a hidden interface, data collection, or instrumentation problem. Fine-grained evaluation can expose issues elsewhere in the product.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="summary">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Summary</p>
+            <h2>Model development is a chain of evidence.</h2>
+          </div>
+        </div>
+        <p class="lead">Begin by framing a broad product need as an ML task with clear inputs, outputs, and objectives. Compare model families under fair conditions, start with the simplest credible baseline, and evaluate operational properties alongside predictive performance.</p>
+        <p>As the project matures, experiment tracking and versioning make results understandable and reproducible. Debugging practices reduce uncertainty, while ensembles, distributed training, and AutoML provide additional power when the value justifies the complexity.</p>
+        <p>Finally, offline evaluation should go beyond one aggregate metric. Baselines, perturbation tests, invariance checks, directional expectations, calibration, confidence policies, and slice-based analysis help determine whether a model behaves sensibly before it reaches users. Offline evidence cannot guarantee production success, but it can prevent many avoidable failures.</p>
+      </section>
+    </main>
+
+    <aside class="toc" aria-label="Table of contents">
+      <h2>In this post</h2>
+      <a href="#foundation">Core idea</a>
+      <a href="#framing">Problem framing</a>
+      <a href="#objectives">Objectives</a>
+      <a href="#development">Model selection</a>
+      <a href="#ensembles">Ensembles</a>
+      <a href="#experiments">Experiments</a>
+      <a href="#debugging">Debugging</a>
+      <a href="#distributed-training">Distributed training</a>
+      <a href="#automl">AutoML</a>
+      <a href="#phases">Development phases</a>
+      <a href="#offline-evaluation">Offline evaluation</a>
+      <a href="#evaluation-tests">Behavioral tests</a>
+      <a href="#calibration">Calibration</a>
+      <a href="#slices">Data slices</a>
+      <a href="#summary">Summary</a>
+    </aside>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

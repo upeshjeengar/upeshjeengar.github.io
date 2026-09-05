@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ML System Design Series - Part 7: Why ML Systems Fail in Production</title>
+  <meta name="description" content="A practical guide to ML failures in production: natural labels, delayed feedback, train-serving skew, edge cases, degenerate feedback loops, distribution shifts, drift detection, and model adaptation." />
+  <link rel="stylesheet" href="style.css?v=7" />
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand-mark" href="#top" aria-label="Go to top">
+        <span class="brand-logo" aria-hidden="true">ML</span>
+        <span>ML System Design Series</span>
+      </a>
+      <div class="top-actions">
+        <a class="pill" href="#failures">Failures</a>
+        <a class="pill" href="#feedback-loops">Feedback loops</a>
+        <a class="pill" href="#distribution-shifts">Distribution shifts</a>
+        <button class="toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">Dark theme</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="hero-card" style="--hero-image: url('https://commons.wikimedia.org/wiki/Special:FilePath/Data%20Science%20Concept%20-%20Data%20Pipeline.svg');">
+      <div class="hero-content">
+        <span class="eyebrow">Part 7 - Production Failures</span>
+        <h1>A model can keep running while its usefulness disappears.</h1>
+        <p class="hero-lede">Production ML systems often fail silently. Data changes, labels arrive late, rare cases become costly, and model decisions influence the feedback used for future training. Reliability begins with understanding these failure modes.</p>
+        <div class="meta-row" aria-label="Article metadata">
+          <span class="meta-chip">20-24 min read</span>
+          <span class="meta-chip">Production reliability guide</span>
+          <span class="meta-chip">Based on Chapter 7 notes</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="seriesLinks" data-include="ml-system-design-series-links.html">
+    <section class="series-section" aria-labelledby="seriesTitle">
+      <div class="series-inner">
+        <p class="section-kicker">Series index</p>
+        <h2 id="seriesTitle">ML System Design blogs</h2>
+        <ol class="series-list">
+          <li><a href="ml-system-design-part-1.html">Part 1: Machine Learning Systems in Production</a></li>
+          <li><a href="ml-system-design-part-2.html">Part 2: Data Engineering, Storage, and Streaming</a></li>
+          <li><a href="ml-system-design-part-3.html">Part 3: Training Data</a></li>
+          <li><a href="ml-system-design-part-4.html">Part 4: Feature Engineering</a></li>
+          <li><a href="ml-system-design-part-5.html">Part 5: Model Development and Offline Evaluation</a></li>
+          <li><a href="ml-system-design-part-6.html">Part 6: Model Deployment</a></li>
+          <li><a href="ml-system-design-part-7.html" aria-current="page">Part 7: Why ML Systems Fail in Production</a></li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <div class="layout">
+    <main>
+      <section class="section flat" aria-label="Overview cards">
+        <div class="grid four">
+          <article class="card">
+            <span class="number">1</span>
+            <h3>Observe outcomes</h3>
+            <p>Natural labels and feedback-loop length determine how quickly real performance becomes visible.</p>
+          </article>
+          <article class="card">
+            <span class="number">2</span>
+            <h3>Find the failure class</h3>
+            <p>Separate operational faults, data bugs, edge cases, and genuine changes in the environment.</p>
+          </article>
+          <article class="card">
+            <span class="number">3</span>
+            <h3>Measure change</h3>
+            <p>Track input, output, and relationship changes using meaningful statistics and time windows.</p>
+          </article>
+          <article class="card">
+            <span class="number">4</span>
+            <h3>Adapt deliberately</h3>
+            <p>Retrain, fine-tune, redesign features, or fix the pipeline according to the actual cause.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="foundation">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">The core idea</p>
+            <h2>Deployment is the beginning of model maintenance.</h2>
+          </div>
+        </div>
+        <p class="lead">A forecasting model may work well when launched and become harmful a year later. Demand changes, customer behavior moves, new products appear, and operational assumptions break. If nobody measures these changes, teams may continue trusting outputs that no longer match reality.</p>
+        <p>Traditional software is expected to execute defined logic correctly. An ML system must also continue making useful predictions on data it has never seen. This creates two categories of expectations: operational behavior and model behavior.</p>
+        <div class="quote">
+          A successful deployment is not a finished model. It is a maintained system with feedback, monitoring, ownership, and an update path.
+        </div>
+      </section>
+
+      <section class="section" id="natural-labels">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Natural labels</p>
+            <h2>Production truth may arrive automatically, late, or not at all.</h2>
+          </div>
+        </div>
+        <p class="lead">A task has natural labels when the system can eventually observe the real outcome. An estimated arrival-time model can compare its prediction with the actual trip duration. A recommendation system can observe whether an item was opened, watched, or purchased.</p>
+        <p>When a task has no inherent label, product design can create partial feedback. Translation tools can collect suggested corrections, ranking systems can collect reactions, and support workflows can record whether a human accepted or changed a recommendation. These signals are useful, but they may be incomplete or biased.</p>
+
+        <h3>Feedback-loop length</h3>
+        <p>The delay between serving a prediction and receiving its outcome determines how quickly the system can detect failure.</p>
+        <div class="grid three">
+          <article class="card"><h3>Short loop</h3><p>Clicks, skips, and immediate interactions may arrive in seconds or minutes, making rapid monitoring possible.</p></article>
+          <article class="card"><h3>Medium loop</h3><p>Reading an article, watching a long video, or completing a purchase can take hours or days.</p></article>
+          <article class="card"><h3>Long loop</h3><p>Fraud disputes, credit outcomes, medical results, or product returns may take weeks or months.</p></article>
+        </div>
+        <p>Missing feedback is not automatically negative feedback. If a recommendation receives no click within a short window, it may be labeled negative too early. A longer window gives more accurate labels but delays monitoring and retraining. The correct window is a product-specific trade-off between speed and label quality.</p>
+      </section>
+
+      <section class="section" id="failures">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Failure taxonomy</p>
+            <h2>An ML system can violate operational or predictive expectations.</h2>
+          </div>
+        </div>
+        <p class="lead">A translation service fails operationally when it times out or crashes. It fails as an ML system when it returns inaccurate translations often enough to violate its quality target. The second failure is harder to detect because the application can appear healthy.</p>
+
+        <div class="compare-grid">
+          <article class="compare-card research">
+            <h3>Software-system failures</h3>
+            <ul class="compare-list">
+              <li>A dependency breaks or becomes incompatible.</li>
+              <li>The wrong model artifact is deployed.</li>
+              <li>Permissions prevent reading features or writing results.</li>
+              <li>Hardware fails, overheats, or runs out of memory.</li>
+              <li>A service crashes, times out, or becomes unavailable.</li>
+              <li>A distributed workflow joins or schedules data incorrectly.</li>
+            </ul>
+          </article>
+          <article class="compare-card production">
+            <h3>ML-specific failures</h3>
+            <ul class="compare-list">
+              <li>Production data differs from training data.</li>
+              <li>Training and serving pipelines compute different features.</li>
+              <li>Labels, preprocessing, or model configuration are wrong.</li>
+              <li>Rare but important cases fail catastrophically.</li>
+              <li>Predictions distort the feedback used for training.</li>
+              <li>The relationship between inputs and outcomes changes.</li>
+            </ul>
+          </article>
+        </div>
+        <p>Many ML incidents are still ordinary software and data-pipeline incidents. A drift alert may be caused by a broken feature, a new encoding, a wrong normalization statistic, an interface change, or an incorrect model version. Diagnose these possibilities before assuming the world has changed.</p>
+      </section>
+
+      <section class="section" id="train-serving-skew">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Train-serving skew</p>
+            <h2>The model is trained on a sample but serves the world.</h2>
+          </div>
+        </div>
+        <p class="lead">Offline evaluation assumes that test data represents future production data. In reality, the training set is finite, selected under practical constraints, and shaped by collection and sampling decisions. Production inputs are broader and continuously changing.</p>
+        <div class="flow-line">
+          <article class="flow-step"><span class="icon">1</span><div><h3>Selection mismatch</h3><p>Training data overrepresents the examples that were easiest to collect, label, or store.</p></div></article>
+          <article class="flow-step"><span class="icon">2</span><div><h3>Pipeline mismatch</h3><p>Training and inference use different defaults, feature code, encodings, windows, or statistics.</p></div></article>
+          <article class="flow-step"><span class="icon">3</span><div><h3>Environmental change</h3><p>Users, products, language, prices, devices, competitors, and social behavior change after training.</p></div></article>
+        </div>
+        <p>Shifts may be sudden after a launch, policy change, unusual event, or new market. They may be gradual as language and customer behavior evolve. They may also be seasonal, such as weekly demand cycles or holiday pricing.</p>
+      </section>
+
+      <section class="section" id="edge-cases">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Edge cases</p>
+            <h2>Average quality cannot excuse catastrophic failures.</h2>
+          </div>
+        </div>
+        <p class="lead">A safety-critical model that works 99.9% of the time may still be unusable if the remaining 0.1% includes severe accidents. The same principle applies to brand and legal risk: a chatbot that occasionally produces hateful content can be unacceptable despite strong average scores.</p>
+        <div class="table-scroll">
+          <table class="format-table" aria-label="Outliers and edge cases comparison">
+            <thead><tr><th>Concept</th><th>Defined by</th><th>Example</th><th>Desired response</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Outlier</strong></td><td>Distance from typical data</td><td>A pedestrian on a highway</td><td>Handle correctly even though the input is unusual</td></tr>
+              <tr><td><strong>Edge case</strong></td><td>Unusually poor model performance</td><td>A scene that causes a dangerous driving decision</td><td>Detect, test, and reduce the failure severity</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>An outlier is not necessarily an edge case if the model handles it correctly, and an ordinary-looking example can still be an edge case. During training, removing extreme values may improve the decision boundary. During inference, the system usually cannot ignore unexpected requests, so it needs robust behavior, abstention, or escalation.</p>
+      </section>
+
+      <section class="section" id="feedback-loops">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Degenerate feedback loops</p>
+            <h2>Predictions can manufacture the evidence that confirms them.</h2>
+          </div>
+        </div>
+        <p class="lead">A degenerate feedback loop appears when model outputs influence future model inputs. In ranking systems, high-ranked items receive more exposure, exposure creates more clicks, and those clicks are then interpreted as proof that the items deserved their rank.</p>
+        <div class="flow-line">
+          <article class="flow-step"><span class="icon">1</span><div><h3>Initial score</h3><p>Item A is ranked slightly above item B.</p></div></article>
+          <article class="flow-step"><span class="icon">2</span><div><h3>Unequal exposure</h3><p>More users see A because its position is higher.</p></div></article>
+          <article class="flow-step"><span class="icon">3</span><div><h3>Biased feedback</h3><p>A receives more clicks partly because it received more opportunities.</p></div></article>
+          <article class="flow-step"><span class="icon">4</span><div><h3>Reinforced ranking</h3><p>The next model treats those clicks as quality and increases A’s lead.</p></div></article>
+        </div>
+        <p>The same mechanism can reinforce historical hiring patterns, lending decisions, content bubbles, and creator popularity. The model observes only outcomes created by the policy already in use.</p>
+
+        <h3>Detecting feedback degeneration</h3>
+        <p>Track how homogeneous recommendations become over time. Measure catalog coverage, long-tail exposure, diversity, and performance across popularity buckets. If the system is much better at recommending already popular items, position and exposure may be confounding the feedback.</p>
+
+        <h3>Correcting the loop</h3>
+        <div class="grid two">
+          <article class="card"><h3>Controlled exploration</h3><p>Give selected new or uncertain items a small amount of randomized exposure so their quality can be estimated with less selection bias.</p></article>
+          <article class="card"><h3>Position-aware training</h3><p>Record where an item appeared and model the chance that it was seen separately from the chance that it was chosen after being seen.</p></article>
+        </div>
+        <p>Completely random results can damage the user experience. Exploration should be bounded, measurable, and appropriate to the risk of the application.</p>
+      </section>
+
+      <section class="section" id="distribution-shifts">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Distribution shifts</p>
+            <h2>Different parts of the data-generating process can change.</h2>
+          </div>
+        </div>
+        <p class="lead">Let <code>X</code> represent model inputs and <code>Y</code> represent labels. Supervised learning observes samples from the joint distribution <code>P(X, Y)</code> and usually learns the relationship <code>P(Y|X)</code>.</p>
+        <pre><code>P(X, Y) = P(Y|X) * P(X)
+P(X, Y) = P(X|Y) * P(Y)</code></pre>
+        <p>These two decompositions help distinguish three commonly confused types of change.</p>
+
+        <div class="table-scroll">
+          <table class="format-table" aria-label="Types of data distribution shift">
+            <thead><tr><th>Shift type</th><th>What changes</th><th>What stays stable</th><th>Intuition</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Covariate shift</strong></td><td><code>P(X)</code></td><td><code>P(Y|X)</code></td><td>Different inputs, same relationship from input to label</td></tr>
+              <tr><td><strong>Label shift</strong></td><td><code>P(Y)</code></td><td><code>P(X|Y)</code></td><td>Different class prevalence, similar inputs within each class</td></tr>
+              <tr><td><strong>Concept drift</strong></td><td><code>P(Y|X)</code></td><td><code>P(X)</code></td><td>The same input now implies a different outcome</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Covariate shift</h3>
+        <p>The production input distribution differs from training, but the conditional relationship remains stable. A marketing campaign may attract wealthier users while income has the same relationship with conversion. Hospital-recorded cough audio may be quiet and aligned, while production phone recordings contain noise and inconsistent timing.</p>
+        <p>Covariate shift can begin before deployment through biased sampling, oversampling rare classes, or active learning. If the target distribution is known, importance weighting can give training examples weight proportional to how common they are expected to be in production. Unknown future shifts are much harder to prepare for.</p>
+
+        <h3>Label shift</h3>
+        <p>The prevalence of outcomes changes while the distribution of inputs within each outcome remains stable. A disease may become less common after a preventive treatment, changing the positive-label rate even if the characteristics of positive cases remain similar.</p>
+
+        <h3>Concept drift</h3>
+        <p>The relationship between input and outcome changes. The same type of property may command a different price after a major economic change. Concept drift can be gradual, sudden, cyclic, or seasonal, and may require separate models or update schedules for different regimes.</p>
+      </section>
+
+      <section class="section" id="schema-shifts">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Schema and feature changes</p>
+            <h2>Not every damaging change fits the formal drift taxonomy.</h2>
+          </div>
+        </div>
+        <div class="grid two">
+          <article class="card">
+            <h3>Feature change</h3>
+            <p>A feature is added, removed, renamed, measured in a new unit, filled with missing values, or given new categories. Changing age from years to months can look like dramatic drift even though users have not changed.</p>
+          </article>
+          <article class="card">
+            <h3>Label-schema change</h3>
+            <p>Classes are added, removed, split, or remapped, or a regression target adopts a different range. The output layer, historical labels, and evaluation logic may all need revision.</p>
+          </article>
+        </div>
+        <p>Several shifts can occur together. A new market can change input features, label prevalence, and the relationship between them. Monitoring should therefore support investigation rather than assume every alert belongs to one clean category.</p>
+      </section>
+
+      <section class="section" id="detecting-shifts">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Detecting shifts</p>
+            <h2>Monitor model quality when labels exist and data behavior when they do not.</h2>
+          </div>
+        </div>
+        <p class="lead">Ground-truth performance is the strongest signal because a shift matters mainly when it harms the model. But labels may be missing or delayed, so production systems often monitor feature and prediction distributions as earlier indicators.</p>
+
+        <div class="grid three">
+          <article class="card"><h3>Quality metrics</h3><p>Accuracy, F1, recall, calibration, business outcomes, and slice metrics when reliable labels arrive.</p></article>
+          <article class="card"><h3>Summary statistics</h3><p>Missing rates, mean, median, variance, quantiles, category frequency, skewness, and range for important features and predictions.</p></article>
+          <article class="card"><h3>Distribution tests</h3><p>Two-sample tests compare a reference window with current data and estimate whether their difference is unlikely to be random sampling noise.</p></article>
+        </div>
+
+        <h3>Statistical significance is not operational importance</h3>
+        <p>A large dataset can make a tiny difference statistically significant. Alerts should account for effect size, affected traffic, feature importance, downstream quality, and business risk. The Kolmogorov-Smirnov test works for one-dimensional distributions without assuming a parametric form, but it does not directly solve high-dimensional drift and may create noisy alerts.</p>
+        <p>Multivariate methods such as Maximum Mean Discrepancy can compare higher-dimensional samples, often after dimensionality reduction. In practice, interpretable feature-level checks remain useful because they help identify which input changed and where to investigate.</p>
+      </section>
+
+      <section class="section" id="time-windows">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Time windows</p>
+            <h2>The window determines which drift you can see.</h2>
+          </div>
+        </div>
+        <p class="lead">Abrupt changes are easier to detect than gradual ones. Spatial shifts appear across markets, devices, or user groups; temporal shifts appear over time. Seasonal patterns can look like incidents when the reference window is too narrow.</p>
+
+        <div class="compare-grid">
+          <article class="compare-card research">
+            <h3>Sliding statistics</h3>
+            <ul class="compare-list">
+              <li>Describe one recent window such as an hour or day.</li>
+              <li>Respond quickly to local changes.</li>
+              <li>Can become noisy when traffic is low.</li>
+              <li>Make short incidents easier to see.</li>
+            </ul>
+          </article>
+          <article class="compare-card production">
+            <h3>Cumulative statistics</h3>
+            <ul class="compare-list">
+              <li>Combine current and historical observations.</li>
+              <li>Provide a stable long-term view.</li>
+              <li>Can hide a sharp recent degradation.</li>
+              <li>React slowly as history grows.</li>
+            </ul>
+          </article>
+        </div>
+        <p>Short windows detect changes faster but increase false alarms. Long windows reduce noise but delay detection. A practical system calculates small windows that can be merged into daily and weekly views, then compares several reference periods to separate incidents from expected seasonality.</p>
+      </section>
+
+      <section class="section" id="addressing-shifts">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Addressing shifts</p>
+            <h2>Fix the cause, then choose how the model should adapt.</h2>
+          </div>
+        </div>
+        <p class="lead">A detected change does not automatically require retraining. First check data contracts, transformations, schemas, instrumentation, application changes, and the deployed artifact. Retraining on corrupted data only preserves the failure.</p>
+        <div class="flow-line">
+          <article class="flow-step"><span class="icon">1</span><div><h3>Validate the signal</h3><p>Confirm the change across metrics, slices, windows, and pipeline stages.</p></div></article>
+          <article class="flow-step"><span class="icon">2</span><div><h3>Find the source</h3><p>Distinguish a real environmental shift from a schema, data, interface, or deployment error.</p></div></article>
+          <article class="flow-step"><span class="icon">3</span><div><h3>Measure the impact</h3><p>Use fresh labels when available and estimate which users, decisions, and outcomes are affected.</p></div></article>
+          <article class="flow-step"><span class="icon">4</span><div><h3>Select an adaptation</h3><p>Fix the pipeline, reweight examples, adapt representations, fine-tune, retrain from scratch, or replace the model.</p></div></article>
+          <article class="flow-step"><span class="icon">5</span><div><h3>Validate and roll out</h3><p>Evaluate on old and new distributions, deploy gradually, and keep rollback available.</p></div></article>
+        </div>
+
+        <h3>Three broad adaptation strategies</h3>
+        <div class="grid three">
+          <article class="card"><h3>Broader training data</h3><p>Train on diverse data so future production examples are more likely to fall within the learned distribution.</p></article>
+          <article class="card"><h3>Domain adaptation</h3><p>Adjust a model or representation toward the target distribution, sometimes without target labels. These techniques remain difficult in practice.</p></article>
+          <article class="card"><h3>Retraining</h3><p>Fine-tune on recent labeled data or train again using old and new data. The correct window and schedule must be tested.</p></article>
+        </div>
+        <p>Fine-tuning is cheaper and faster, but it can forget older behavior or fail to recover enough quality. Training from scratch costs more but can produce a cleaner model across both historical and current data.</p>
+      </section>
+
+      <section class="section" id="robust-design">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Designing for change</p>
+            <h2>Feature stability is part of production performance.</h2>
+          </div>
+        </div>
+        <p class="lead">A highly predictive feature may change so quickly that it forces constant retraining. A slightly weaker but more stable representation can produce a more reliable and affordable system.</p>
+        <p>For example, an exact app-store rank may shift continuously. Bucketing it into top 10, 11–100, 101–1000, and larger groups sacrifices detail but improves stability. Different markets may also drift at different rates, making separate models or update schedules more practical than one global model.</p>
+        <div class="decision-strip" aria-label="Robust production design principles">
+          <span class="decision-chip">Stable features</span>
+          <span class="decision-chip">Slice-level monitoring</span>
+          <span class="decision-chip">Versioned schemas</span>
+          <span class="decision-chip">Delayed-label handling</span>
+          <span class="decision-chip">Exploration budget</span>
+          <span class="decision-chip">Safe retraining</span>
+        </div>
+      </section>
+
+      <section class="section" id="summary">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Summary</p>
+            <h2>Production failure is usually a moving-system problem.</h2>
+          </div>
+        </div>
+        <p class="lead">Natural labels and feedback-loop length determine how quickly real model quality can be measured. Operational failures are often loud, while predictive failures can remain invisible unless the system observes outcomes, critical slices, and changes in data behavior.</p>
+        <p>Three important ML-specific risks are edge cases, degenerate feedback loops, and data distribution shifts. Covariate shift changes the input distribution, label shift changes outcome prevalence, and concept drift changes the relationship between inputs and outcomes. Feature and label schemas can also change outside this formal taxonomy.</p>
+        <p>Detection requires appropriate metrics, reference populations, statistical tests, and time windows. Response begins with root-cause analysis, because apparent drift may be an internal bug. When the environment has genuinely changed, the system can reweight, adapt, fine-tune, retrain, or redesign its features. The best long-term defense is an ML system designed from the beginning to observe and respond to change.</p>
+      </section>
+    </main>
+
+    <aside class="toc" aria-label="Table of contents">
+      <h2>In this post</h2>
+      <a href="#foundation">Core idea</a>
+      <a href="#natural-labels">Natural labels</a>
+      <a href="#failures">Failure taxonomy</a>
+      <a href="#train-serving-skew">Train-serving skew</a>
+      <a href="#edge-cases">Edge cases</a>
+      <a href="#feedback-loops">Feedback loops</a>
+      <a href="#distribution-shifts">Distribution shifts</a>
+      <a href="#schema-shifts">Schema changes</a>
+      <a href="#detecting-shifts">Detecting shifts</a>
+      <a href="#time-windows">Time windows</a>
+      <a href="#addressing-shifts">Addressing shifts</a>
+      <a href="#robust-design">Robust design</a>
+      <a href="#summary">Summary</a>
+    </aside>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

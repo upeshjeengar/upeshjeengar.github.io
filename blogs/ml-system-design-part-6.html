@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ML System Design Series - Part 6: Model Deployment</title>
+  <meta name="description" content="A practical guide to ML model deployment: batch and online prediction, streaming features, model compression, cloud and edge inference, compilers, runtime optimization, and browser ML." />
+  <link rel="stylesheet" href="style.css?v=6" />
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand-mark" href="#top" aria-label="Go to top">
+        <span class="brand-logo" aria-hidden="true">ML</span>
+        <span>ML System Design Series</span>
+      </a>
+      <div class="top-actions">
+        <a class="pill" href="#serving">Serving</a>
+        <a class="pill" href="#compression">Compression</a>
+        <a class="pill" href="#cloud-edge">Cloud &amp; edge</a>
+        <button class="toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">Dark theme</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="hero-card" style="--hero-image: url('https://commons.wikimedia.org/wiki/Special:FilePath/NOIRLab_HQ_Server_Racks_%286V6A0404-CC%29.jpg');">
+      <div class="hero-content">
+        <span class="eyebrow">Part 6 - Model Deployment</span>
+        <h1>A trained model creates value only when it can serve reliably.</h1>
+        <p class="hero-lede">Deployment turns model logic into a working system. The design must decide when predictions are generated, where inference runs, how features stay consistent, and how latency, cost, privacy, and hardware limits are handled.</p>
+        <div class="meta-row" aria-label="Article metadata">
+          <span class="meta-chip">22-26 min read</span>
+          <span class="meta-chip">Production deployment guide</span>
+          <span class="meta-chip">Based on Chapter 6 notes</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="seriesLinks" data-include="ml-system-design-series-links.html">
+    <section class="series-section" aria-labelledby="seriesTitle">
+      <div class="series-inner">
+        <p class="section-kicker">Series index</p>
+        <h2 id="seriesTitle">ML System Design blogs</h2>
+        <ol class="series-list">
+          <li><a href="ml-system-design-part-1.html">Part 1: Machine Learning Systems in Production</a></li>
+          <li><a href="ml-system-design-part-2.html">Part 2: Data Engineering, Storage, and Streaming</a></li>
+          <li><a href="ml-system-design-part-3.html">Part 3: Training Data</a></li>
+          <li><a href="ml-system-design-part-4.html">Part 4: Feature Engineering</a></li>
+          <li><a href="ml-system-design-part-5.html">Part 5: Model Development and Offline Evaluation</a></li>
+          <li><a href="ml-system-design-part-6.html" aria-current="page">Part 6: Model Deployment</a></li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <div class="layout">
+    <main>
+      <section class="section flat" aria-label="Overview cards">
+        <div class="grid four">
+          <article class="card">
+            <span class="number">1</span>
+            <h3>Choose when</h3>
+            <p>Batch, online, and hybrid prediction offer different balances of freshness, latency, and throughput.</p>
+          </article>
+          <article class="card">
+            <span class="number">2</span>
+            <h3>Make it fast</h3>
+            <p>Compression and inference optimization reduce memory, compute, and response time.</p>
+          </article>
+          <article class="card">
+            <span class="number">3</span>
+            <h3>Choose where</h3>
+            <p>Cloud and edge deployments trade operational ease for privacy, connectivity, cost, and device constraints.</p>
+          </article>
+          <article class="card">
+            <span class="number">4</span>
+            <h3>Target hardware</h3>
+            <p>Compilers translate model graphs into efficient instructions for CPUs, GPUs, accelerators, and browsers.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="foundation">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">The core idea</p>
+            <h2>Deployment is an engineering system around model logic.</h2>
+          </div>
+        </div>
+        <p class="lead">A model definition and its learned parameters are only part of a production application. Deployment makes that model accessible to users or downstream systems while meeting requirements for latency, availability, cost, safety, and maintainability.</p>
+        <p>Production exists on a spectrum. A notebook that produces a report for an internal team has different requirements from a service handling millions of requests. The deployment design should be proportional to the real workload, but it should also leave a clear path for updates and debugging.</p>
+        <div class="quote">
+          Deploying a demo endpoint is usually straightforward. Keeping the right models available, observable, fast, and current is the hard part.
+        </div>
+      </section>
+
+      <section class="section" id="realities">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Deployment realities</p>
+            <h2>Production ML rarely behaves like a one-model project.</h2>
+          </div>
+        </div>
+        <p class="lead">A product may use separate models for ranking, fraud, demand, pricing, estimated arrival time, churn, search, safety, and personalization. Geographic markets or user groups may need specialized variants. Infrastructure therefore has to manage a portfolio of models, not one exported file.</p>
+        <div class="grid three">
+          <article class="card">
+            <h3>Models decay</h3>
+            <p>Even when code stays unchanged, production data and user behavior can move away from the training distribution. Performance should be expected to change over time.</p>
+          </article>
+          <article class="card">
+            <h3>Updates are normal</h3>
+            <p>The useful question is not only how often a model should be updated, but how safely and quickly the system can validate and deploy an update.</p>
+          </article>
+          <article class="card">
+            <h3>Scale is contextual</h3>
+            <p>Scale may mean many models, many users, large inputs, strict latency, high request volume, or expensive compute. The bottleneck depends on the application.</p>
+          </article>
+        </div>
+        <p>Separating model development and deployment teams can create communication overhead. When ownership is divided, model artifacts need explicit contracts: input schema, output schema, preprocessing, dependencies, expected resource use, metrics, and rollback behavior.</p>
+      </section>
+
+      <section class="section" id="serving">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Prediction serving</p>
+            <h2>Decide whether predictions should be generated before or after requests arrive.</h2>
+          </div>
+        </div>
+        <p class="lead">Online prediction generates a result on demand. Batch prediction generates results periodically or when a job is triggered, stores them, and retrieves them later. The terms synchronous and asynchronous prediction often make this distinction clearer.</p>
+
+        <div class="table-scroll">
+          <table class="format-table" aria-label="Batch and online prediction comparison">
+            <thead>
+              <tr><th>Dimension</th><th>Batch prediction</th><th>Online prediction</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Timing</strong></td><td>Periodic or triggered before a user request</td><td>As soon as the request arrives</td></tr>
+              <tr><td><strong>Primary goal</strong></td><td>High throughput</td><td>Low response latency</td></tr>
+              <tr><td><strong>Freshness</strong></td><td>Limited by the batch schedule</td><td>Can respond to current context</td></tr>
+              <tr><td><strong>Inputs</strong></td><td>Requests must be known or enumerable in advance</td><td>Can handle unpredictable inputs</td></tr>
+              <tr><td><strong>Storage</strong></td><td>Predictions are persisted for later retrieval</td><td>Predictions may be returned without long-term storage</td></tr>
+              <tr><td><strong>Typical use</strong></td><td>Large recommendation or marketing jobs</td><td>Fraud detection, translation, assistants, and safety systems</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Batch prediction</h3>
+        <p>Batch processing is useful when many predictions are needed and the result does not have to reflect the latest event. It can combine inputs efficiently, use distributed computation, and make a slow model appear fast to the user because serving requires only a database lookup.</p>
+        <div class="flow-line">
+          <article class="flow-step"><span class="icon">1</span><div><h3>Collect batch features</h3><p>Read historical values from a warehouse or another durable store.</p></div></article>
+          <article class="flow-step"><span class="icon">2</span><div><h3>Generate predictions</h3><p>Run a scheduled job across known users, products, or entities.</p></div></article>
+          <article class="flow-step"><span class="icon">3</span><div><h3>Persist results</h3><p>Write scores, labels, or ranked candidates to a serving store.</p></div></article>
+          <article class="flow-step"><span class="icon">4</span><div><h3>Retrieve on request</h3><p>The application fetches a precomputed result with predictable latency.</p></div></article>
+        </div>
+        <p>The cost is staleness. If recommendations are generated every four hours, a user’s new behavior may not influence the experience until the next run. Batch systems also waste compute when they score entities that never request a result.</p>
+
+        <h3>Online prediction</h3>
+        <p>Online prediction is necessary when inputs cannot be known beforehand or the decision must use current information. A translation service cannot precompute every possible sentence, and a fraud system is far more valuable before a transaction is approved than several hours later.</p>
+        <p>An online path needs two things: a data pipeline that can prepare current features quickly and a model runtime that can finish inference within the application’s latency budget.</p>
+        <div class="callout">
+          <span class="icon">i</span>
+          <div><strong>Online does not mean one sample at a time.</strong><p>A synchronous service can use dynamic batching to combine requests briefly, while an asynchronous job can process records individually. The distinction is when results are produced relative to demand.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="hybrid">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Hybrid systems</p>
+            <h2>Batch and online prediction can work together.</h2>
+          </div>
+        </div>
+        <p class="lead">A system can precompute expensive candidates or popular requests, then use online inference for the final decision. A food-delivery application might generate restaurant candidates in batch, then rank items inside a selected restaurant using current context.</p>
+
+        <div class="grid two">
+          <article class="card">
+            <h3>Batch features</h3>
+            <p>Historical aggregates such as a restaurant’s average preparation time, a customer’s long-term preference profile, or a product’s thirty-day conversion rate.</p>
+          </article>
+          <article class="card">
+            <h3>Streaming features</h3>
+            <p>Current signals such as active orders, available drivers, the latest clicks, current traffic, or recent transaction velocity.</p>
+          </article>
+        </div>
+
+        <h3>Unify the training and serving transformations</h3>
+        <p>Separate batch and streaming pipelines often compute features differently. A change may be implemented in the training job but missed in the online service, or the two paths may interpret time windows, missing values, and category mappings differently. The model is then trained on one representation and served another.</p>
+        <div class="compare-grid">
+          <article class="compare-card research">
+            <h3>Training path</h3>
+            <ul class="compare-list">
+              <li>Reads historical data.</li>
+              <li>Builds labels and point-in-time features.</li>
+              <li>Runs large transformations efficiently.</li>
+              <li>Produces datasets for experimentation.</li>
+            </ul>
+          </article>
+          <article class="compare-card production">
+            <h3>Serving path</h3>
+            <ul class="compare-list">
+              <li>Receives current application events.</li>
+              <li>Combines stored and streaming features.</li>
+              <li>Must finish within a strict latency budget.</li>
+              <li>Produces predictions for live decisions.</li>
+            </ul>
+          </article>
+        </div>
+        <p>Shared feature definitions, compatible processing engines, point-in-time tests, and parity checks reduce training-serving skew. Unification does not require identical execution infrastructure, but both paths should implement the same semantics.</p>
+      </section>
+
+      <section class="section" id="compression">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Model compression</p>
+            <h2>Reduce the model before buying more hardware.</h2>
+          </div>
+        </div>
+        <p class="lead">If inference is too slow, the main options are to reduce the work performed by the model, represent the model more compactly, optimize execution, or use faster hardware. Compression often helps both memory use and latency.</p>
+
+        <div class="grid two">
+          <article class="card">
+            <h3>Low-rank factorization</h3>
+            <p>Replace a large tensor operation with smaller factors that approximate it. Depthwise separable convolutions follow this principle by splitting spatial and channel mixing into cheaper operations.</p>
+          </article>
+          <article class="card">
+            <h3>Knowledge distillation</h3>
+            <p>Train a smaller student model to imitate a larger teacher or ensemble. The student can use a different architecture and becomes the model deployed in production.</p>
+          </article>
+          <article class="card">
+            <h3>Pruning</h3>
+            <p>Remove unimportant structure or set low-value weights to zero. Sparse models may require less storage and computation, but speed gains depend on runtime and hardware support for sparsity.</p>
+          </article>
+          <article class="card">
+            <h3>Quantization</h3>
+            <p>Represent weights and activations with fewer bits. Moving from 32-bit floating point to 16-bit or 8-bit formats reduces memory traffic and can unlock faster hardware instructions.</p>
+          </article>
+        </div>
+
+        <h3>Quantization in numbers</h3>
+        <pre><code>100,000,000 parameters * 32 bits = 400 MB
+100,000,000 parameters * 16 bits = 200 MB
+100,000,000 parameters *  8 bits = 100 MB</code></pre>
+        <p>Lower precision can increase batch size and throughput, but it introduces rounding, clipping, overflow, and accuracy risks. Quantization-aware training simulates reduced precision during training. Post-training quantization converts an already trained model and is easier to adopt, but may lose more quality.</p>
+
+        <div class="table-scroll">
+          <table class="format-table" aria-label="Model compression trade-offs">
+            <thead><tr><th>Method</th><th>Main benefit</th><th>Main risk</th><th>Best validation</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Low-rank factorization</strong></td><td>Fewer operations and parameters</td><td>Architecture-specific approximation error</td><td>Task quality and latency on target hardware</td></tr>
+              <tr><td><strong>Distillation</strong></td><td>Smaller deployable model</td><td>Student may not preserve teacher behavior on rare cases</td><td>Slice-level agreement and task metrics</td></tr>
+              <tr><td><strong>Pruning</strong></td><td>Sparsity and lower storage</td><td>Runtime may not accelerate sparse operations</td><td>Measured end-to-end throughput</td></tr>
+              <tr><td><strong>Quantization</strong></td><td>Lower memory and faster integer inference</td><td>Numerical error and quality loss</td><td>Accuracy, calibration, latency, and memory</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">
+          <span class="icon">!</span>
+          <div><strong>Never report speed in isolation.</strong><p>A seven-times latency improvement is not automatically a better system. Every compression result should include output quality, critical slice behavior, calibration, memory, throughput, and measurements from the actual target device.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="cloud-edge">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Cloud and edge</p>
+            <h2>Where inference runs changes the product experience.</h2>
+          </div>
+        </div>
+        <p class="lead">Cloud inference runs most computation in managed or private data centers. Edge inference runs on consumer or embedded devices such as phones, browsers, vehicles, cameras, robots, and specialized chips.</p>
+
+        <div class="table-scroll">
+          <table class="format-table" aria-label="Cloud and edge inference comparison">
+            <thead><tr><th>Dimension</th><th>Cloud inference</th><th>Edge inference</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Setup</strong></td><td>Managed services make initial deployment straightforward</td><td>Requires packaging for device runtimes and hardware</td></tr>
+              <tr><td><strong>Compute</strong></td><td>Elastic and easier to upgrade centrally</td><td>Limited by device memory, battery, and thermal budget</td></tr>
+              <tr><td><strong>Connectivity</strong></td><td>Depends on network availability</td><td>Can operate offline or with unreliable connections</td></tr>
+              <tr><td><strong>Latency</strong></td><td>Includes network round trips</td><td>Avoids network latency but depends on device speed</td></tr>
+              <tr><td><strong>Privacy</strong></td><td>Data may leave the device and be stored centrally</td><td>Sensitive inputs can remain local</td></tr>
+              <tr><td><strong>Updates</strong></td><td>One service can be updated centrally</td><td>Device fragmentation and client releases complicate rollout</td></tr>
+              <tr><td><strong>Cost</strong></td><td>Inference and data-transfer bills grow with usage</td><td>Uses customer or embedded-device compute</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Edge deployment reduces some privacy and connectivity risks, but does not remove security concerns. Devices can be lost, inspected, modified, or attacked. Model protection, secure updates, data retention, and fallback behavior still require deliberate design.</p>
+        <p>Cloud and edge are not mutually exclusive. A device can run a small model for immediate decisions, send selected data to the cloud for a heavier model, and cache cloud results for later offline use.</p>
+      </section>
+
+      <section class="section" id="compilers">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Compilers and hardware</p>
+            <h2>A model graph must become instructions the target device executes well.</h2>
+          </div>
+        </div>
+        <p class="lead">Framework code is portable at a high level, but CPUs, GPUs, tensor accelerators, and embedded devices have different compute primitives, memory layouts, cache sizes, and supported operations.</p>
+        <p>Supporting every framework directly on every hardware backend does not scale. Compilers use intermediate representations to bridge the two sides. This conversion from a high-level graph toward hardware-native code is called lowering.</p>
+
+        <div class="flow-line">
+          <article class="flow-step"><span class="icon">1</span><div><h3>Framework model</h3><p>PyTorch, TensorFlow, scikit-learn, LightGBM, or another authoring environment.</p></div></article>
+          <article class="flow-step"><span class="icon">2</span><div><h3>High-level IR</h3><p>A hardware-agnostic computation graph preserves operations and model structure.</p></div></article>
+          <article class="flow-step"><span class="icon">3</span><div><h3>Optimized IR</h3><p>Operations are rewritten, fused, scheduled, and specialized for the target.</p></div></article>
+          <article class="flow-step"><span class="icon">4</span><div><h3>Low-level IR</h3><p>Memory movement, vector operations, and device-specific execution become explicit.</p></div></article>
+          <article class="flow-step"><span class="icon">5</span><div><h3>Machine code</h3><p>The resulting artifact executes on a CPU, GPU, accelerator, or embedded backend.</p></div></article>
+        </div>
+        <p>Lowering is not a simple one-to-one translation. The same operation may need a very different implementation depending on whether the hardware works most efficiently on scalars, vectors, or tensor blocks.</p>
+      </section>
+
+      <section class="section" id="optimization">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Inference optimization</p>
+            <h2>Correct machine code can still be inefficient.</h2>
+          </div>
+        </div>
+        <p class="lead">A deployed model may fail to use cache locality, vector instructions, parallel execution, or efficient memory movement. End-to-end ML workflows make this harder because data may cross several libraries and frameworks, each optimized independently.</p>
+
+        <div class="grid two">
+          <article class="card">
+            <h3>Vectorization</h3>
+            <p>Replace element-by-element loops with hardware operations that process multiple contiguous values together.</p>
+          </article>
+          <article class="card">
+            <h3>Parallelization</h3>
+            <p>Split independent work across cores, threads, or compute units while accounting for coordination overhead.</p>
+          </article>
+          <article class="card">
+            <h3>Loop tiling</h3>
+            <p>Change the order and block size of memory access so frequently reused values stay close to the processor. The best layout depends on the hardware.</p>
+          </article>
+          <article class="card">
+            <h3>Operator fusion</h3>
+            <p>Combine operations so intermediate values do not have to be repeatedly written to and read from memory.</p>
+          </article>
+        </div>
+
+        <h3>Local and global optimization</h3>
+        <p>Local optimization improves one operator or a small group of operators. Global optimization examines the entire computation graph and may combine branches vertically or horizontally. Global changes can produce larger gains, but the search space is much larger.</p>
+        <p>Hardware vendors traditionally encode expert heuristics for popular models. Automated tuning systems instead measure candidate schedules, learn a cost model, and focus the search on promising execution plans. The result can adapt to new hardware, although the tuning process may take hours or days.</p>
+        <div class="callout">
+          <span class="icon">i</span>
+          <div><strong>Optimization is tied to a target.</strong><p>Benchmark the exported model with realistic shapes, concurrency, runtime versions, and the exact hardware family intended for production. A fast schedule on one backend may be poor on another.</p></div>
+        </div>
+      </section>
+
+      <section class="section" id="browser-ml">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">ML in browsers</p>
+            <h2>The browser can be a portable edge runtime.</h2>
+          </div>
+        </div>
+        <p class="lead">Running inference in a browser can reach laptops, phones, and other devices without targeting every processor directly. JavaScript ML libraries make deployment approachable, while WebAssembly can execute compiled code with better performance and richer language support.</p>
+        <div class="grid three">
+          <article class="card"><h3>Portability</h3><p>A browser artifact can run across operating systems and chip families supported by the browser.</p></article>
+          <article class="card"><h3>Privacy and offline use</h3><p>Inputs can stay on the device, and core features may remain available without a network connection.</p></article>
+          <article class="card"><h3>Performance gap</h3><p>Browser execution still carries overhead compared with a carefully optimized native application, especially for large models.</p></article>
+        </div>
+        <p>Browser deployment is most effective when model size, startup time, memory use, device variability, and fallback behavior are treated as product requirements from the beginning.</p>
+      </section>
+
+      <section class="section" id="checklist">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Deployment checklist</p>
+            <h2>Make the serving contract explicit.</h2>
+          </div>
+        </div>
+        <div class="grid two">
+          <article class="card"><h3>Prediction timing</h3><p>Define freshness, latency, throughput, and whether requests are predictable enough for batch computation.</p></article>
+          <article class="card"><h3>Feature parity</h3><p>Test that training and serving transformations use the same definitions, windows, defaults, and category mappings.</p></article>
+          <article class="card"><h3>Artifact contract</h3><p>Version the model, preprocessing, schema, dependencies, runtime, and expected resource requirements together.</p></article>
+          <article class="card"><h3>Target benchmark</h3><p>Measure quality, p50 and tail latency, throughput, memory, startup time, and power on representative hardware.</p></article>
+          <article class="card"><h3>Failure behavior</h3><p>Specify timeouts, retries, cached responses, simpler fallbacks, human review, and behavior when features are missing.</p></article>
+          <article class="card"><h3>Update path</h3><p>Plan validation, staged rollout, observability, rollback, and compatibility with old clients before the first release.</p></article>
+        </div>
+      </section>
+
+      <section class="section" id="summary">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Summary</p>
+            <h2>Deployment choices shape the model users actually experience.</h2>
+          </div>
+        </div>
+        <p class="lead">Batch prediction maximizes throughput and can hide slow inference behind precomputation, while online prediction responds to new requests and current behavior. Hybrid systems frequently provide the best balance, but only when batch and streaming features remain semantically consistent.</p>
+        <p>Compression techniques such as low-rank factorization, distillation, pruning, and quantization can reduce memory and latency. Cloud deployment offers centralized compute and easy updates; edge deployment improves offline behavior, network latency, and data locality while introducing device constraints and fragmented runtimes.</p>
+        <p>Compilers and intermediate representations connect model frameworks to hardware. Runtime techniques such as vectorization, tiling, parallelization, operator fusion, and automated schedule search determine whether the exported model uses that hardware efficiently. The final deployment decision should always be based on end-to-end measurements and explicit product requirements, not model accuracy alone.</p>
+      </section>
+    </main>
+
+    <aside class="toc" aria-label="Table of contents">
+      <h2>In this post</h2>
+      <a href="#foundation">Core idea</a>
+      <a href="#realities">Deployment realities</a>
+      <a href="#serving">Prediction serving</a>
+      <a href="#hybrid">Hybrid systems</a>
+      <a href="#compression">Model compression</a>
+      <a href="#cloud-edge">Cloud and edge</a>
+      <a href="#compilers">Compilers</a>
+      <a href="#optimization">Optimization</a>
+      <a href="#browser-ml">Browser ML</a>
+      <a href="#checklist">Checklist</a>
+      <a href="#summary">Summary</a>
+    </aside>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

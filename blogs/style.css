@@ -383,6 +383,21 @@
       font-size: 1.08rem;
     }
 
+    pre {
+      max-width: 100%;
+      overflow-x: auto;
+      margin: 1rem 0;
+      padding: 1rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: var(--mono);
+      line-height: 1.55;
+    }
+
+    pre code { font-family: inherit; }
+
     .system-stack {
       display: grid;
       gap: .75rem;
@@ -725,6 +740,14 @@
       border: 1px solid var(--line);
       background: var(--surface);
     }
+
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: var(--radius-sm);
+    }
+
+    .table-scroll .format-table { min-width: 620px; }
 
     .format-table th,
     .format-table td {
