@@ -1,5 +1,13 @@
 [
   {
+    "title": "Top 10 Jev Use cases",
+    "dateCreated": "2026-09-05",
+    "link": "blogs/ml-system-design-part-7.html",
+    "summary": "A practical guide to what people are actually building with jev",
+    "tags": ["Jev", "Classification model", "Natural language Processing(NLP)"],
+    "external": false
+  },
+  {
     "title": "ML System Design Series - Part 7: Why ML Systems Fail in Production",
     "dateCreated": "2026-09-05",
     "link": "blogs/ml-system-design-part-7.html",

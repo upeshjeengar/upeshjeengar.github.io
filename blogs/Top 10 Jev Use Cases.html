@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="data:," />
+  <title>Top 10 Jev Use Cases</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,650&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      color-scheme: light dark;
+      --paper: #f6f4ef;
+      --paper-2: #ebe8df;
+      --ink: #171815;
+      --muted: #5b5c55;
+      --line: #cac7bc;
+      --accent: #c94827;
+      --accent-soft: #f0d8ce;
+      --mark: #dfeac7;
+      --link: #174f3f;
+      --shadow: rgba(23,24,21,.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #171916;
+        --paper-2: #22251f;
+        --ink: #f2f0e8;
+        --muted: #b5b6ae;
+        --line: #3b3e37;
+        --accent: #ff7957;
+        --accent-soft: #4b2b23;
+        --mark: #34422b;
+        --link: #95d3b9;
+        --shadow: rgba(0,0,0,.24);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "IBM Plex Sans", sans-serif;
+      font-size: 17px;
+      line-height: 1.62;
+      text-rendering: optimizeLegibility;
+    }
+    a { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a:hover { color: var(--accent); }
+    a:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: 2px; }
+
+    .page { width: min(1180px, calc(100% - 44px)); margin: 0 auto; }
+    .mast {
+      min-height: min(78vh, 780px);
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(260px, .62fr);
+      gap: clamp(40px, 8vw, 120px);
+      align-items: end;
+      padding: clamp(80px, 12vw, 160px) 0 64px;
+      border-bottom: 1px solid var(--ink);
+    }
+    .kicker {
+      margin: 0 0 24px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: .74rem;
+      letter-spacing: .03em;
+      color: var(--accent);
+    }
+    h1 {
+      max-width: 840px;
+      margin: 0;
+      font-family: "Newsreader", serif;
+      font-size: clamp(3.5rem, 8.4vw, 8rem);
+      line-height: .91;
+      font-weight: 650;
+      letter-spacing: -.055em;
+    }
+    .standfirst {
+      margin: 0 0 4px;
+      max-width: 32ch;
+      font-size: 1.08rem;
+      color: var(--muted);
+    }
+    .standfirst strong { color: var(--ink); font-weight: 600; }
+
+    .primer {
+      display: grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: clamp(38px, 8vw, 116px);
+      padding: 68px 0 84px;
+    }
+    .primer h2,
+    .mentions h2,
+    .sources h2 {
+      font-family: "Newsreader", serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1;
+      letter-spacing: -.03em;
+      margin: 0 0 20px;
+    }
+    .primer-copy { max-width: 65ch; }
+    .primer-copy p { margin: 0 0 18px; }
+    .primitive-list { display: grid; gap: 10px; margin-top: 28px; }
+    .primitive {
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      border-top: 1px solid var(--line);
+      padding-top: 10px;
+      font-size: .94rem;
+    }
+    .primitive code { font-family: "IBM Plex Mono", monospace; color: var(--accent); }
+    .metrics {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border-top: 1px solid var(--ink);
+    }
+    .metrics li { padding: 18px 0; border-bottom: 1px solid var(--line); }
+    .metrics strong { display: block; font-family: "Newsreader", serif; font-size: 2.15rem; line-height: 1; font-weight: 650; letter-spacing: -.03em; }
+    .metrics span { display: block; margin-top: 6px; color: var(--muted); font-size: .82rem; }
+
+    .rankings { border-top: 1px solid var(--ink); }
+    .case {
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr) 250px;
+      gap: 28px;
+      padding: 48px 0 52px;
+      border-bottom: 1px solid var(--line);
+    }
+    .number {
+      font-family: "Newsreader", serif;
+      font-size: 4.4rem;
+      line-height: .8;
+      letter-spacing: -.06em;
+      color: var(--accent);
+      font-variant-numeric: lining-nums;
+    }
+    .case h2 {
+      margin: -4px 0 12px;
+      font-family: "Newsreader", serif;
+      font-size: clamp(2rem, 3.8vw, 3.35rem);
+      line-height: 1;
+      letter-spacing: -.035em;
+    }
+    .case p { margin: 0; max-width: 65ch; }
+    .why {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 4px 8px;
+      background: var(--mark);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: .72rem;
+      line-height: 1.4;
+    }
+    .case-meta { align-self: start; }
+    .project { margin: 0 0 14px; font-size: .78rem; color: var(--muted); }
+    .project strong { display: block; color: var(--ink); font-family: "IBM Plex Mono", monospace; font-size: .84rem; font-weight: 500; }
+    .links { display: flex; flex-wrap: wrap; gap: 8px; }
+    .links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: .7rem;
+      line-height: 1;
+      text-decoration: none;
+      background: var(--paper);
+    }
+    .links a::after { content: "↗"; color: var(--accent); }
+    .links a:hover { border-color: var(--accent); }
+    .missing { margin-top: 10px; color: var(--muted); font-size: .72rem; line-height: 1.4; }
+
+    .mentions { padding: 82px 0 72px; border-bottom: 1px solid var(--ink); }
+    .mentions > p { max-width: 60ch; color: var(--muted); }
+    .mention-list { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 56px; }
+    .mention {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 10px;
+      padding: 18px 0;
+      border-top: 1px solid var(--line);
+    }
+    .mention:nth-last-child(1) { grid-column: 1 / -1; }
+    .mention-index { font-family: "IBM Plex Mono", monospace; font-size: .68rem; color: var(--accent); padding-top: 3px; }
+    .mention h3 { margin: 0 0 3px; font-size: 1rem; font-weight: 600; }
+    .mention p { margin: 0; color: var(--muted); font-size: .84rem; line-height: 1.5; }
+
+    .sources { display: grid; grid-template-columns: 1fr 1.3fr; gap: clamp(38px, 8vw, 100px); padding: 72px 0 90px; }
+    .note { padding: 24px; background: var(--paper-2); box-shadow: 8px 8px 0 var(--shadow); }
+    .note h3 { margin: 0 0 10px; font-family: "IBM Plex Mono", monospace; font-size: .78rem; font-weight: 500; color: var(--accent); }
+    .note p { margin: 0; color: var(--muted); font-size: .86rem; }
+    .source-list { list-style: none; padding: 0; margin: 0; }
+    .source-list li { padding: 14px 0; border-top: 1px solid var(--line); }
+    .source-list li:last-child { border-bottom: 1px solid var(--line); }
+    .source-list span { display: block; color: var(--muted); font-size: .75rem; }
+    .endmark { margin-top: 32px; font-family: "Newsreader", serif; color: var(--accent); font-size: 2rem; }
+
+    @media (max-width: 820px) {
+      .mast { min-height: auto; grid-template-columns: 1fr; gap: 36px; align-items: start; padding: 96px 0 42px; }
+      .standfirst { max-width: 52ch; }
+      .primer { grid-template-columns: 1fr; padding: 52px 0 64px; }
+      .metrics { display: grid; grid-template-columns: 1fr 1fr; }
+      .metrics li { padding-right: 16px; }
+      .metrics li:nth-child(odd) { border-right: 1px solid var(--line); }
+      .metrics li:nth-child(even) { padding-left: 16px; }
+      .case { grid-template-columns: 70px minmax(0, 1fr); }
+      .number { font-size: 3.2rem; }
+      .case-meta { grid-column: 2; }
+      .sources { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 540px) {
+      .page { width: min(100% - 28px, 1180px); }
+      body { font-size: 16px; }
+      .mast { padding-top: 70px; }
+      h1 { font-size: clamp(3.25rem, 18vw, 5rem); }
+      .primer { padding-top: 44px; gap: 28px; }
+      .primitive { grid-template-columns: 72px 1fr; }
+      .metrics { grid-template-columns: 1fr; }
+      .metrics li, .metrics li:nth-child(even) { padding: 14px 0; }
+      .metrics li:nth-child(odd) { border-right: 0; }
+      .case { grid-template-columns: 44px minmax(0, 1fr); gap: 12px; padding: 38px 0 42px; }
+      .number { font-size: 2.4rem; }
+      .case h2 { font-size: 2rem; }
+      .links { gap: 6px; }
+      .links a { padding: 8px 9px; }
+      .mention-list { grid-template-columns: 1fr; }
+      .mention:nth-last-child(1) { grid-column: auto; }
+      .mentions { padding: 62px 0 56px; }
+      .sources { padding: 56px 0 70px; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="mast">
+      <div>
+        <p class="kicker">FIELD NOTES / 21 SEP 2026</p>
+        <h1>The 10 Jev use cases that matter</h1>
+      </div>
+      <p class="standfirst"><strong>Not demos for demo’s sake.</strong> These are the community projects that show where a tiny, typed judgment model can remove latency, cost and uncertainty from an agent loop.</p>
+    </header>
+
+    <section class="primer" aria-labelledby="what-is-jev">
+      <div class="primer-copy">
+        <h2 id="what-is-jev">A decision engine, not a chatbot</h2>
+        <p>Jev is TypeSafe’s first System One model. It returns typed decisions with calibrated probabilities rather than prose—useful wherever software needs a fast, bounded judgment instead of another paragraph.</p>
+        <div class="primitive-list" aria-label="Jev core primitives">
+          <div class="primitive"><code>Choice</code><span>Pick from a defined set of options.</span></div>
+          <div class="primitive"><code>Score</code><span>Rate an input against a criterion.</span></div>
+          <div class="primitive"><code>Noul</code><span>Return structured, typed judgment.</span></div>
+        </div>
+      </div>
+      <ul class="metrics" aria-label="Published Jev figures">
+        <li><strong>$0.042</strong><span>per million input tokens; output cited as free</span></li>
+        <li><strong>70–500ms</strong><span>published latency range</span></li>
+        <li><strong>~68%</strong><span>on TypeSafe’s four-workflow benchmark</span></li>
+        <li><strong>40–400×</strong><span>cheaper; 20–200× faster than mid-tier LLMs</span></li>
+      </ul>
+    </section>
+
+    <section class="rankings" aria-label="Ranked Jev use cases">
+      <article class="case">
+        <div class="number">01</div>
+        <div>
+          <h2>Context compaction</h2>
+          <p>Score every tool call for relevance, drop the noise, and keep the useful content verbatim. Unlike summarization, this doesn’t ask a generative model to rewrite evidence—and potentially distort it—before the next step.</p>
+          <span class="why">BEST FIT: LONG-RUNNING AGENTS</span>
+        </div>
+        <div class="case-meta">
+          <p class="project">PROJECT<strong>fast-jev-compaction</strong>by Tamara Tran</p>
+          <div class="links">
+            <a href="https://github.com/tamaratran/fast-jev-compaction" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://skills.sh/tamaratran/fast-jev-compaction" target="_blank" rel="noopener noreferrer">skills.sh</a>
+            <a href="https://x.com/tamarajtran/status/2100694549362553153" target="_blank" rel="noopener noreferrer">Original post</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="case">
+        <div class="number">02</div>
+        <div>
+          <h2>Model routing</h2>
+          <p>Judge the difficulty of a coding task before spending on it. The router chooses the model tier, reasoning depth and speed mode, letting routine work stay cheap while ambiguous work gets more capable compute.</p>
+          <span class="why">BEST FIT: MULTI-MODEL CODING STACKS</span>
+        </div>
+        <div class="case-meta">
+          <p class="project">PROJECT<strong>jev-codex-router</strong></p>
+          <div class="links">
+            <a href="https://github.com/0xNatoshi/jev-codex-router" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://skills.sh/0xNatoshi/jev-codex-router" target="_blank" rel="noopener noreferrer">skills.sh</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="case">
+        <div class="number">03</div>
+        <div>
+          <h2>Memory promotion gate</h2>
+          <p>Agent memory gets worse when everything is remembered. Beacon keeps history portable across coding tools, while Jev judges which runs and lessons are valuable enough to promote into shared memory.</p>
+          <span class="why">BEST FIT: CROSS-TOOL AGENT MEMORY</span>
+        </div>
+        <div class="case-meta">
+          <p class="project">PROJECT<strong>Beacon</strong>by Asymptote Labs</p>
+          <div class="links">
+            <a href="https://x.com/_avichawla/status/2101966536798040332" target="_blank" rel="noopener noreferrer">Source post</a>
+          </div>
+          <p class="missing">Repository links weren’t confirmed in the source set.</p>
+        </div>
+      </article>
+
+      <article class="case">
+        <div class="number">04</div>
+        <div>
+          <h2>Code review triage</h2>
+          <p>Screen a change set, rank risk, and send only the consequential work to an expensive model or a human reviewer. That turns Jev into a first-pass queue manager rather than a replacement for review.</p>
+          <span class="why">BEST FIT: HIGH-VOLUME PULL REQUESTS</span>
+        </div>
+        <div class="case-meta">
+          <p class="project">PROJECT<strong>jev-review</strong>includes a local dashboard</p>
+          <div class="links">
+            <a href="https://github.com/devagrawal09/jev-review" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://skills.sh/devagrawal09/jev-review" target="_blank" rel="noopener noreferrer">skills.sh</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="case">
+        <div class="number">05</div>
+        <div>
+          <h2>Completion verification</h2>
+          <p>Don’t trust an agent’s “done.” Check its tool outputs, code diff and test results, then judge whether the stated task was actually completed. This is a compact evaluator at the exact point where agent confidence is least reliable.</p>
+          <span class="why">BEST FIT: AUTONOMOUS CODING LOOPS</span>
+        </div>
+        <div class="case-meta">
+          <p class="project">PROJECT<strong>Canny</strong></p>
+          <div class="links">
+            <a href="https://github.com/qkal/Canny" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://skills.sh/qkal/Canny" target="_blank" rel="noopener noreferrer">skills.sh</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="case">
+        <div class="number">06</div>
+        <div>
+          <h2>Browser agents</h2>
+          <p>Use Jev for the repeated micro-decisions—what to do next and which element to click—then call a small language model only when text must be composed. The project reports a Google Flights search in roughly seven seconds.</p>
+          <span class="why">BEST FIT: STRUCTURED WEB TASKS</span>
+        </div>
+        <div class="case-meta">
+          <p class="project">PROJECT<strong>jev-ultrafast</strong>by browser-use</p>
+          <div class="links">
+            <a href="https://github.com/browser-use/jev-ultrafast" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://skills.sh/browser-use/jev-ultrafast" target="_blank" rel="noopener noreferrer">skills.sh</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="case">
+        <div class="number">07</div>
+        <div>
+          <h2>Desktop automation</h2>
+          <p>Read the operating system’s accessibility tree and choose the next button, menu or input. This replaces slow screenshot interpretation with a smaller decision over structured interface elements.</p>
+          <span class="why">BEST FIT: REPEATABLE GUI WORKFLOWS</span>
+        </div>
+        <div class="case-meta">
+          <p class="project">PROJECT<strong>agent-desktop</strong></p>
+          <div class="links">
+            <a href="https://github.com/lahfir/agent-desktop" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://skills.sh/lahfir/agent-desktop" target="_blank" rel="noopener noreferrer">skills.sh</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="case">
+        <div class="number">08</div>
+        <div>
+          <h2>Judgment toolkit</h2>
+          <p>Expose fact checking, content screening, semantic reranking, classification and information extraction as ready-made tools. It’s the broadest route here for adding bounded judgments to an existing agent.</p>
+          <span class="why">BEST FIT: GENERAL AGENT TOOLCHAINS</span>
+        </div>
+        <div class="case-meta">
+          <p class="project">PROJECT<strong>jev-mcp</strong></p>
+          <div class="links">
+            <a href="https://github.com/jkudish/jev-mcp" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://skills.sh/jkudish/jev-mcp" target="_blank" rel="noopener noreferrer">skills.sh</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="case">
+        <div class="number">09</div>
+        <div>
+          <h2>Repository navigation</h2>
+          <p>At each directory level, judge which files are most relevant to the question and follow that path. The value isn’t code generation; it’s reducing the search space before a more capable model reads anything.</p>
+          <span class="why">BEST FIT: LARGE, UNFAMILIAR CODEBASES</span>
+        </div>
+        <div class="case-meta">
+          <p class="project">PROJECT<strong>Blink</strong>by Ellipsis</p>
+          <div class="links">
+            <a href="https://github.com/ellipsis-dev/blink" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://skills.sh/ellipsis-dev/blink" target="_blank" rel="noopener noreferrer">skills.sh</a>
+          </div>
+        </div>
+      </article>
+
+      <article class="case">
+        <div class="number">10</div>
+        <div>
+          <h2>Training data curation</h2>
+          <p>Screen JSONL or Parquet records for quality, relevance and risk before they enter a training set. At dataset scale, a cheap typed gate can reserve expensive inspection for uncertain or consequential rows.</p>
+          <span class="why">BEST FIT: DATASET QUALITY PIPELINES</span>
+        </div>
+        <div class="case-meta">
+          <p class="project">PROJECT<strong>jev-curate</strong></p>
+          <div class="links">
+            <a href="https://github.com/AkashPriyadarshii/jev-curate" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://skills.sh/AkashPriyadarshii/jev-curate" target="_blank" rel="noopener noreferrer">skills.sh</a>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="mentions" aria-labelledby="honorable-mentions">
+      <h2 id="honorable-mentions">Five more worth opening</h2>
+      <p>Useful ideas that didn’t make the top ten, either because they overlap a stronger entry or serve a narrower workflow.</p>
+      <div class="mention-list">
+        <article class="mention"><span class="mention-index">A</span><div><h3><a href="https://github.com/GhalebDweikat/winnow" target="_blank" rel="noopener noreferrer">Winnow</a></h3><p>Context garbage collection for Claude Code.</p></div></article>
+        <article class="mention"><span class="mention-index">B</span><div><h3><a href="https://github.com/sharziki/semdecide" target="_blank" rel="noopener noreferrer">SemDecide</a></h3><p>A command-line classifier for pipes, CI and crawlers.</p></div></article>
+        <article class="mention"><span class="mention-index">C</span><div><h3><a href="https://github.com/vercel-labs/json-render" target="_blank" rel="noopener noreferrer">json-render</a></h3><p>Jev picks UI components, props and layout instead of writing JSON token by token.</p></div></article>
+        <article class="mention"><span class="mention-index">D</span><div><h3><a href="https://github.com/itsmostafa/typesafe-mcp" target="_blank" rel="noopener noreferrer">typesafe-mcp</a></h3><p>Connect Jev to Claude Code, Claude Desktop, Codex and Pi.</p></div></article>
+        <article class="mention"><span class="mention-index">E</span><div><h3><a href="https://github.com/irfndi/prism-liquidity-agent" target="_blank" rel="noopener noreferrer">Prism</a></h3><p>Judges toxic flow, market pressure and mean reversion before handing off to an existing strategy.</p></div></article>
+      </div>
+    </section>
+
+    <section class="sources" aria-labelledby="sources-title">
+      <div>
+        <h2 id="sources-title">How to read this list</h2>
+        <div class="note">
+          <h3>SNAPSHOT, NOT CERTIFICATION</h3>
+          <p>The linked community projects appeared in posts on 21 September 2026 and were not independently verified for reliability or security. Pricing, latency, benchmark and speed claims are vendor-published or project-reported, not independent measurements.</p>
+        </div>
+      </div>
+      <div>
+        <ul class="source-list">
+          <li><a href="https://x.com/charliejhills/status/2101957500669169711" target="_blank" rel="noopener noreferrer">Charlie Hills — 20 Jev projects</a><span>Primary community roundup · X</span></li>
+          <li><a href="https://x.com/Pluvio9yte/status/2101831273224311035" target="_blank" rel="noopener noreferrer">雪踏乌云 — project list and descriptions</a><span>Matching roundup with GitHub links · X</span></li>
+          <li><a href="https://x.com/tamarajtran/status/2100694549362553153" target="_blank" rel="noopener noreferrer">Tamara Tran — fast-jev-compaction</a><span>Project source · X</span></li>
+          <li><a href="https://x.com/_avichawla/status/2101966536798040332" target="_blank" rel="noopener noreferrer">Avi Chawla — Beacon</a><span>Project source · X</span></li>
+        </ul>
+        <div class="endmark" aria-hidden="true">◆</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
