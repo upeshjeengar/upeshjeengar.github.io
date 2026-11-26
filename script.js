@@ -1,12 +1,5 @@
 const projects = [
   {
-    title: "CompliFlow Lite",
-    category: "applied",
-    description: "A prototype that answers employee policy questions and routes requests for approval. I used RAG to cite policies and mocked the enterprise integrations for the demo.",
-    tags: ["Agent workflows", "NVIDIA NIM", "RAG"],
-    url: "https://github.com/upeshjeengar/enterprise-ai-automation",
-  },
-  {
     title: "Digital twin on AWS",
     category: "applied",
     description: "I deployed a personal chatbot on Lambda and API Gateway, stored its frontend and conversation memory in S3, and defined the setup in Terraform.",
@@ -92,6 +85,45 @@ projectFilters.addEventListener("click", (event) => {
 });
 renderProjects("all");
 projectFilters.hidden = false;
+
+const workTabs = document.querySelector(".work-tabs");
+const workButtons = Array.from(workTabs.querySelectorAll("button"));
+const workPanels = workButtons.map((button) => document.getElementById(button.getAttribute("aria-controls")));
+
+function selectWork(index) {
+  workButtons.forEach((button, position) => {
+    const selected = position === index;
+    button.setAttribute("aria-selected", String(selected));
+    button.tabIndex = selected ? 0 : -1;
+    workPanels[position].hidden = !selected;
+  });
+}
+
+workTabs.setAttribute("role", "tablist");
+workTabs.setAttribute("aria-label", "Featured projects");
+workButtons.forEach((button, index) => {
+  const panel = workPanels[index];
+  button.setAttribute("role", "tab");
+  panel.setAttribute("role", "tabpanel");
+  panel.setAttribute("aria-labelledby", button.id);
+  panel.tabIndex = 0;
+  button.addEventListener("click", () => selectWork(index));
+  button.addEventListener("keydown", (event) => {
+    let next;
+    switch (event.key) {
+      case "ArrowLeft": next = (index + workButtons.length - 1) % workButtons.length; break;
+      case "ArrowRight": next = (index + 1) % workButtons.length; break;
+      case "Home": next = 0; break;
+      case "End": next = workButtons.length - 1; break;
+      default: return;
+    }
+    event.preventDefault();
+    selectWork(next);
+    workButtons[next].focus();
+  });
+});
+selectWork(0);
+workTabs.hidden = false;
 
 function formatDate(value) {
   return new Intl.DateTimeFormat("en", {
