@@ -1,128 +1,97 @@
 const projects = [
   {
-    title: "VLM from Scratch",
-    description:
-      "Trained a Q-Former to align ViT image embeddings with text, then fine-tuned SmolLM-135M. The BLIP-2-style model achieved 90% Recall@5 in a 50,000-pair Conceptual Captions experiment.",
-    tags: ["Python", "LLMs", "Computer Vision", "PyTorch"],
-    links: [{ label: "GitHub", url: "https://github.com/Upeshjeengar/vlm" }],
-    featured: true,
+    title: "CompliFlow Lite",
+    category: "applied",
+    description: "A prototype that answers employee policy questions and routes requests for approval. I used RAG to cite policies and mocked the enterprise integrations for the demo.",
+    tags: ["Agent workflows", "NVIDIA NIM", "RAG"],
+    url: "https://github.com/upeshjeengar/enterprise-ai-automation",
+  },
+  {
+    title: "Digital twin on AWS",
+    category: "applied",
+    description: "I deployed a personal chatbot on Lambda and API Gateway, stored its frontend and conversation memory in S3, and defined the setup in Terraform.",
+    tags: ["AWS", "Terraform", "LLMs"],
+    url: "https://github.com/upeshjeengar/twin",
   },
   {
     title: "fast-rlm",
-    description:
-      "Contributed a merged robustness fix to fast-rlm so step-cost display handles missing usage cost safely for local, free, or unknown-cost runs instead of assuming every backend returns billable cost data.",
-    tags: ["Open Source", "TypeScript", "CLI", "LLM Tooling"],
-    links: [{ label: "Merged PR", url: "https://github.com/avbiswas/fast-rlm/pull/3" }],
-    featured: true,
+    category: "open",
+    description: "My merged fix lets the CLI show a useful message when a model provider leaves the cost field empty.",
+    tags: ["TypeScript", "CLI"],
+    url: "https://github.com/avbiswas/fast-rlm/pull/3",
+    linkLabel: "Merged pull request",
   },
   {
-    title: "CompliFlow Lite",
-    description:
-      "Built a governed multi-agent enterprise workflow automation system that turns employee requests into auditable workflows or grounded policy answers, using RAG, deterministic guardrails, human approvals, and mocked Jira, ServiceNow, SAP Ariba, DocuSign, Okta, and Slack integrations.",
-    tags: ["Multi-Agent Systems", "RAG", "NVIDIA NIM", "Guardrails", "Enterprise Automation"],
-    links: [
-      {
-        label: "GitHub",
-        url: "https://github.com/upeshjeengar/enterprise-ai-automation",
-      },
-    ],
-    featured: true,
+    title: "Flight fare prediction",
+    category: "ml",
+    description: "I trained a random forest on flight data, tracked experiments in MLflow, and served predictions through a Flask API.",
+    tags: ["scikit-learn", "MLflow", "Flask"],
+    url: "https://github.com/upeshjeengar/flight-price-prediction-flask",
   },
   {
-    title: "Solving PDEs Using Deep Learning",
-    description:
-      "B.Tech Project applying deep learning methods to partial differential equations, including Burgers' equation, the wave equation with external disturbances, and the Euler beam equation.",
-    tags: ["BTP", "Deep Learning", "PDEs", "Jupyter Notebook"],
-    links: [
-      {
-        label: "GitHub",
-        url: "https://github.com/upeshjeengar/Solving-Partial-Differntial-Equations-using-Deep-Learning",
-      },
-    ],
-    featured: true,
+    title: "Emotion detection and image enhancement",
+    category: "ml",
+    description: "A computer vision project that uses a ResNet-50 classifier and explores how image enhancement affects predictions.",
+    tags: ["ResNet-50", "OpenCV", "MIRNet"],
+    url: "https://github.com/upeshjeengar/Emotion-Detection-Deployement",
   },
   {
-    title: "NGMA Synthetic Data Generation",
-    description:
-      "Configurable Python pipeline that generates realistic hierarchical product datasets with spatial-temporal behaviors, seasonality, and Pareto-driven distributions.",
-    tags: ["Python", "Synthetic Data", "Analytics", "ML Testing"],
-    links: [],
-    featured: true,
+    title: "MLOps notebooks",
+    category: "ml",
+    description: "My working notes on experiment tracking, data versioning, and building repeatable training pipelines.",
+    tags: ["MLflow", "DVC", "Python"],
+    url: "https://github.com/upeshjeengar/MLOps",
   },
   {
-    title: "Explainable Loan Approval System",
-    description:
-      "Integrated logistic regression into a Spring application with feature engineering, TF-IDF, recursive feature elimination, and LLM-powered explainability.",
-    tags: ["Java", "Spring", "ML", "Explainability"],
-    links: [],
-    featured: true,
+    title: "ML models from scratch",
+    category: "ml",
+    description: "Implementations I wrote while studying the algorithms behind common machine learning models.",
+    tags: ["Python", "Machine learning"],
+    url: "https://github.com/upeshjeengar/ML-Models-from-scratch",
   },
   {
-    title: "Flight Price Prediction",
-    description:
-      "End-to-end Random Forest flight fare predictor deployed through Flask, AWS EC2, Gunicorn, and Nginx with MLflow-backed model monitoring.",
-    tags: ["Python", "Flask", "AWS", "MLflow"],
-    links: [{ label: "GitHub", url: "https://github.com/Upeshjeengar/flight-price-prediction-flask" }],
+    title: "Movie recommender",
+    category: "ml",
+    description: "A small project exploring how to turn movie data into a list of suggestions.",
+    tags: ["Recommender systems", "Python"],
+    url: "https://github.com/upeshjeengar/Movie-Recommender",
   },
   {
-    title: "Emotion Detection and Image Enhancement",
-    description:
-      "Improved emotion detection accuracy with augmentation and transfer learning, then integrated MIRNet-based image enhancement workflows using OpenCV.",
-    tags: ["Computer Vision", "ResNet-50", "MIRNet", "OpenCV"],
-    links: [{ label: "GitHub", url: "https://github.com/Upeshjeengar/Emotion-Detection-Deployement" }],
-  },
-  {
-    title: "Movie Recommender",
-    description:
-      "Recommendation system project from GitHub focused on turning user-item signals into practical movie suggestions.",
-    tags: ["Machine Learning", "Recommenders", "Python"],
-    links: [{ label: "GitHub", url: "https://github.com/Upeshjeengar/Movie-Recommender" }],
-  },
-  {
-    title: "MLOps",
-    description:
-      "Repository for machine learning operations workflows, tooling, and production-minded experimentation.",
-    tags: ["MLOps", "Python", "Automation"],
-    links: [{ label: "GitHub", url: "https://github.com/Upeshjeengar/MLOps" }],
-  },
-  {
-    title: "GreentechEnergy",
-    description:
-      "Business website for Greentech Energy Rajsamand",
-    tags: ["Web", "SCSS", "Business Site"],
-    links: [{ label: "GitHub", url: "https://github.com/Upeshjeengar/GreentechEnergy" }],
+    title: "Greentech Energy",
+    category: "applied",
+    description: "An early web project for a local solar energy business in Rajsamand.",
+    tags: ["Web", "SCSS"],
+    url: "https://github.com/upeshjeengar/GreentechEnergy",
   },
 ];
 
-function createTagList(tags) {
-  return tags.map((tag) => `<span class="tag">${tag}</span>`).join("");
+function renderProjects(category) {
+  const grid = document.querySelector("#projectGrid");
+  const entries = category === "all"
+    ? projects
+    : projects.filter((project) => project.category === category);
+  grid.innerHTML = entries.map((project) => `
+    <article class="project-card">
+      <h3>${project.title}</h3>
+      <p>${project.description}</p>
+      <div class="tag-list">${project.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}</div>
+      <div class="project-links">
+        <a href="${project.url}" target="_blank" rel="noopener noreferrer" aria-label="${project.linkLabel || "GitHub repository"} for ${project.title}">${project.linkLabel || "GitHub"}</a>
+      </div>
+    </article>
+  `).join("");
 }
 
-function renderProjects(grid, entries) {
-  grid.innerHTML = entries
-    .map(
-      (project) => `
-        <article class="project-card">
-          <h3>${project.title}</h3>
-          <div class="tag-list">${createTagList(project.tags)}</div>
-          <p>${project.description}</p>
-          <div class="project-links">
-            ${
-              project.links.length
-                ? project.links
-                    .map(
-                      (link) =>
-                        `<a href="${link.url}" target="_blank" rel="noreferrer">${link.label}</a>`
-                    )
-                    .join("")
-                : "<span>Professional project</span>"
-            }
-          </div>
-        </article>
-      `
-    )
-    .join("");
-}
+const projectFilters = document.querySelector(".project-filters");
+projectFilters.addEventListener("click", (event) => {
+  const filter = event.target.closest("button[data-category]");
+  if (!filter) return;
+  projectFilters.querySelector("[aria-pressed='true']").setAttribute("aria-pressed", "false");
+  filter.setAttribute("aria-pressed", "true");
+  renderProjects(filter.dataset.category);
+});
+renderProjects("all");
+projectFilters.hidden = false;
 
 function formatDate(value) {
   return new Intl.DateTimeFormat("en", {
@@ -187,52 +156,4 @@ async function loadBlogs() {
   }
 }
 
-function initWorkflow() {
-  const list = document.querySelector(".workflow-tabs");
-  const tabs = Array.from(list.querySelectorAll("button"));
-  const panels = tabs.map((tab) => document.getElementById(tab.dataset.panel));
-
-  function selectTab(index) {
-    tabs.forEach((tab, i) => {
-      tab.setAttribute("aria-selected", String(i === index));
-      tab.tabIndex = i === index ? 0 : -1;
-      panels[i].hidden = i !== index;
-    });
-  }
-
-  list.setAttribute("role", "tablist");
-  list.setAttribute("aria-label", "Ticket workflows");
-  tabs.forEach((tab, index) => {
-    const panel = panels[index];
-    tab.setAttribute("role", "tab");
-    tab.setAttribute("aria-controls", panel.id);
-    panel.setAttribute("role", "tabpanel");
-    panel.setAttribute("aria-labelledby", tab.id);
-    panel.tabIndex = 0;
-    tab.addEventListener("click", () => selectTab(index));
-    tab.addEventListener("keydown", (event) => {
-      let next;
-      switch (event.key) {
-        case "ArrowLeft": next = (index + tabs.length - 1) % tabs.length; break;
-        case "ArrowRight": next = (index + 1) % tabs.length; break;
-        case "Home": next = 0; break;
-        case "End": next = tabs.length - 1; break;
-        default: return;
-      }
-      event.preventDefault();
-      selectTab(next);
-      tabs[next].focus();
-    });
-  });
-
-  selectTab(0);
-  list.hidden = false;
-}
-
-const featuredProjects = projects.filter((project) => project.featured).slice(0, 4);
-renderProjects(document.querySelector("#projectGrid"), featuredProjects);
-const extraProjects = projects.filter((project) => !featuredProjects.includes(project));
-renderProjects(document.querySelector("#extraProjectGrid"), extraProjects);
-document.querySelector("#moreProjects").hidden = extraProjects.length === 0;
-initWorkflow();
 loadBlogs();
