@@ -4,18 +4,28 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Upesh Jeengar, AI engineer at Azentio and IIT Guwahati graduate. Enterprise AI agents, vision-language models, and scientific machine learning." />
-  <meta name="theme-color" content="#101310" />
+  <meta name="theme-color" content="#050508" />
   <title>Upesh Jeengar | AI Engineer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2310232c'/%3E%3Cpath d='m7 9 7 7-7 7m10 0h8' stroke='%2379f0ff' stroke-width='2' fill='none'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20261126g" />
-  <script src="script.js?v=20261126g" defer></script>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=20261126h" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.8/dist/lenis.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/typed.js@2.1.0/dist/typed.umd.js" defer></script>
+  <script src="script.js?v=20261126h" type="module"></script>
 </head>
 <body>
   <a class="skip-link" href="#home">Skip to content</a>
+  <div class="boot-screen" hidden aria-hidden="true">
+    <div class="boot-content"><span class="boot-mark">UJ</span><span>initializing model&hellip;</span><span class="boot-track"><span class="boot-fill"></span></span></div>
+  </div>
+  <div class="lab-cursor" aria-hidden="true"><span></span><i></i></div>
+  <div class="reading-progress" aria-hidden="true"></div>
   <header class="site-header">
-    <div class="reading-progress" aria-hidden="true"></div>
     <div class="header-inner wrap">
       <a class="brand" href="#home" aria-label="Upesh Jeengar home"><span class="brand-mark" aria-hidden="true">UJ</span><span>Upesh Jeengar</span></a>
       <nav aria-label="Primary navigation">
@@ -24,21 +34,41 @@
         <a href="#work">Background</a>
         <a href="#blogs">Writing</a>
       </nav>
-      <a class="header-contact" href="#contact">Contact</a>
+      <div class="header-actions">
+        <button class="palette-button icon-button" type="button" aria-label="Open command palette" aria-keyshortcuts="Control+K Meta+K" title="Open command palette" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+        </button>
+        <a class="header-contact" href="#contact">Contact</a>
+      </div>
     </div>
   </header>
 
   <main id="home" tabindex="-1">
     <section class="hero" aria-labelledby="name">
       <img class="hero-image" src="assets/research-workbench.webp" alt="" width="1536" height="1024" fetchpriority="high" />
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="hero-field" aria-hidden="true"></div>
       <div class="wrap hero-content">
         <p class="eyebrow">AI engineer <span aria-hidden="true">/</span> IIT Guwahati '25</p>
         <h1 id="name">Upesh Jeengar<span>.</span></h1>
+        <p class="hero-role" aria-hidden="true"><span class="role-prompt">&gt;_</span> <span id="heroRole">AI Engineer</span></p>
         <p class="hero-lede">I build AI assistants for support engineers at Azentio. My side projects range from vision-language models to neural solvers for wave equations.</p>
         <div class="hero-actions">
           <a class="button primary" href="#azentio">Explore Azentio work</a>
           <a class="button outline" href="#projects">Personal projects</a>
           <a class="button outline" href="https://github.com/Upeshjeengar" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a class="button outline resume-button" href="upesh-jeengar-resume.pdf" download>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 17v4h14v-4"></path></svg>Resume
+          </a>
+        </div>
+      </div>
+      <div class="wrap hero-footer">
+        <a class="scroll-indicator icon-button" href="#azentio" aria-label="Scroll to Building at Azentio" title="Scroll to Building at Azentio">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-5-5 5 5 5-5"></path></svg>
+        </a>
+        <div class="hero-terminal" aria-hidden="true">
+          <span class="terminal-dots"><i></i><i></i><i></i></span>
+          <div><span class="terminal-command">&gt; whoami</span><span class="terminal-output">upesh</span></div>
         </div>
       </div>
     </section>
@@ -56,7 +86,7 @@
               <h3 id="insurance-title">Insurance support agent</h3>
               <p>I helped launch an assistant that handles routine insurance support questions and gives engineers a starting point when a ticket needs investigation.</p>
             </div>
-            <p class="impact-metric"><strong>52%</strong> <span>faster ticket resolution</span></p>
+            <p class="impact-metric"><strong aria-label="52%"><span aria-hidden="true">52%</span></strong> <span>faster ticket resolution</span></p>
           </div>
           <section class="trace-frame insurance-trace" data-trace="insurance" data-state="idle" aria-labelledby="insurance-trace-title">
             <header class="trace-header">
@@ -90,6 +120,18 @@
               <span data-trace-status aria-live="polite">Ready</span>
               <span>Fictional tickets</span>
             </footer>
+            <form class="ticket-demo" id="ticketDemo" hidden>
+              <label for="demoQuestion">Ask the demo agent <span>Simulated &middot; local only</span></label>
+              <div class="ticket-input-row">
+                <input id="demoQuestion" placeholder="Where can I find my policy schedule?" maxlength="240" required autocomplete="off" />
+                <button type="submit" class="button primary">Send</button>
+              </div>
+              <div class="demo-answer" hidden>
+                <p class="demo-state" role="status"></p>
+                <p class="demo-stream" aria-hidden="true"></p>
+                <p class="sr-only demo-announcement" aria-live="polite"></p>
+              </div>
+            </form>
           </section>
         </article>
         <div class="company-grid">
@@ -169,6 +211,10 @@
           </div>
           <figure class="work-visual retrieval">
             <figcaption><h4>Image and text retrieval</h4><p>Recall on 500 test samples</p></figcaption>
+            <div class="retrieval-toggle" role="group" aria-label="Compare retrieval direction" hidden>
+              <button type="button" data-direction="image" aria-pressed="true">Image to text</button>
+              <button type="button" data-direction="text" aria-pressed="false">Text to image</button>
+            </div>
             <table aria-label="Recall scores for image-to-text and text-to-image retrieval">
               <thead><tr><th scope="col">Metric</th><th scope="col">Image to text</th><th scope="col">Text to image</th></tr></thead>
               <tbody>
@@ -191,6 +237,21 @@
             <a href="https://github.com/Upeshjeengar/Solving-Partial-Differntial-Equations-using-Deep-Learning/blob/main/wave_equation.ipynb" target="_blank" rel="noopener noreferrer" aria-label="Open the wave-equation notebook"><img src="assets/pinn-wave-comparison.webp" width="932" height="432" alt="Surface plots comparing the PINN prediction and the exact wave equation solution" loading="lazy" /></a>
             <figcaption>Wave-equation results from the project notebook</figcaption>
           </figure>
+          <div class="wave-lab" hidden>
+            <div class="wave-lab-head">
+              <h4>1D wave equation</h4>
+              <div class="wave-buttons">
+                <button type="button" class="wave-play" aria-pressed="false">Play</button>
+                <button type="button" class="wave-disturb">Disturb</button>
+                <button type="button" class="wave-reset">Reset</button>
+              </div>
+            </div>
+            <canvas class="wave-canvas" aria-label="Interactive wave displacement" role="img"></canvas>
+            <div class="wave-time">
+              <label for="waveTime">Time <output for="waveTime">0.00 s</output></label>
+              <input id="waveTime" type="range" min="0" max="12" step="0.01" value="0" />
+            </div>
+          </div>
         </article>
         <article class="work-panel" id="case-agents">
           <div class="work-copy">
@@ -201,6 +262,7 @@
           </div>
           <figure class="work-visual pipeline">
             <figcaption><h4>Example: software access request</h4></figcaption>
+            <canvas class="pipeline-flow" aria-hidden="true"></canvas>
             <ol>
               <li><strong>Retrieve policy</strong><span>Find the relevant access and approval rules.</span></li>
               <li><strong>Route for review</strong><span>Send the request to the required approver.</span></li>
@@ -227,7 +289,7 @@
 
     <section class="experience" id="work" aria-labelledby="work-title">
       <div class="wrap section">
-        <div class="section-heading" data-animate>
+        <div class="section-heading timeline-heading">
           <div><p class="kicker">Education &amp; work</p><h2 id="work-title">My background</h2></div>
           <a class="text-link" href="https://www.linkedin.com/in/upesh-jeengar" target="_blank" rel="noopener noreferrer">LinkedIn profile</a>
         </div>
@@ -272,6 +334,10 @@
           <div><dt>Deployment</dt><dd>AWS, Docker, Terraform, GitHub Actions</dd></div>
           <div><dt>Data &amp; experiments</dt><dd>SQL, pandas, MLflow, DVC</dd></div>
         </dl>
+        <div class="skill-interactive" hidden>
+          <div class="skill-filters" role="group" aria-label="Filter tools"></div>
+          <div class="skill-map"><svg aria-hidden="true"></svg></div>
+        </div>
       </div>
     </section>
 
@@ -307,5 +373,15 @@
   <footer class="site-footer">
     <div class="wrap"><span>Upesh Jeengar</span><a href="#home">Back to top</a></div>
   </footer>
+  <dialog class="command-dialog" aria-label="Jump to a section">
+    <div class="command-head">
+      <input type="search" aria-label="Search sections" placeholder="Jump to a section&hellip;" autocomplete="off" />
+      <button type="button" class="icon-button command-close" aria-label="Close command palette" title="Close command palette">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"></path></svg>
+      </button>
+    </div>
+    <ul class="command-results"></ul>
+    <p class="command-empty" hidden>No matching sections.</p>
+  </dialog>
 </body>
 </html>
