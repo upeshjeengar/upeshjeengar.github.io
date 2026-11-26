@@ -355,3 +355,34 @@ async function loadBlogs() {
 }
 
 loadBlogs();
+
+const motionAllowed = window.matchMedia("(prefers-reduced-motion: no-preference)");
+const fineHover = window.matchMedia("(hover: hover) and (pointer: fine)");
+const signalControls = "button:not(:disabled), .button, .header-contact, .site-header nav a, .more-items summary";
+const signalSurfaces = `${signalControls}, .company-project, .project-card`;
+
+document.addEventListener("pointermove", (event) => {
+  if (event.pointerType !== "mouse" || !motionAllowed.matches || !fineHover.matches) return;
+  const surface = event.target.closest(signalSurfaces);
+  if (!surface) return;
+  const { left } = surface.getBoundingClientRect();
+  surface.style.setProperty("--pointer-x", `${event.clientX - left}px`);
+}, { passive: true });
+
+document.addEventListener("click", (event) => {
+  if (!motionAllowed.matches) return;
+  const control = event.target.closest(signalControls);
+  if (!control) return;
+
+  control.querySelector(":scope > .signal-burst")?.remove();
+  const burst = document.createElement("span");
+  burst.className = "signal-burst";
+  burst.setAttribute("aria-hidden", "true");
+  if (event.detail > 0) {
+    const { left, top } = control.getBoundingClientRect();
+    burst.style.setProperty("--burst-x", `${event.clientX - left}px`);
+    burst.style.setProperty("--burst-y", `${event.clientY - top}px`);
+  }
+  control.append(burst);
+  window.setTimeout(() => burst.remove(), 650);
+});
