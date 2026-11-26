@@ -2,13 +2,13 @@ const projects = [
   {
     title: "VLM from Scratch",
     description:
-      "Built a BLIP-2 style vision-language model by contrastively training a Q-Former to align ViT image embeddings with text, then finetuned SmolLM-135M.",
+      "Trained a Q-Former to align ViT image embeddings with text, then fine-tuned SmolLM-135M. The BLIP-2-style model achieved 90% Recall@5 in a 50,000-pair Conceptual Captions experiment.",
     tags: ["Python", "LLMs", "Computer Vision", "PyTorch"],
     links: [{ label: "GitHub", url: "https://github.com/Upeshjeengar/vlm" }],
     featured: true,
   },
   {
-    title: "Open Source: fast-rlm(Python)",
+    title: "fast-rlm",
     description:
       "Contributed a merged robustness fix to fast-rlm so step-cost display handles missing usage cost safely for local, free, or unknown-cost runs instead of assuming every backend returns billable cost data.",
     tags: ["Open Source", "TypeScript", "CLI", "LLM Tooling"],
@@ -98,12 +98,11 @@ function createTagList(tags) {
   return tags.map((tag) => `<span class="tag">${tag}</span>`).join("");
 }
 
-function renderProjects() {
-  const grid = document.querySelector("#projectGrid");
-  grid.innerHTML = projects
+function renderProjects(grid, entries) {
+  grid.innerHTML = entries
     .map(
       (project) => `
-        <article class="project-card ${project.featured ? "featured" : ""}">
+        <article class="project-card">
           <h3>${project.title}</h3>
           <div class="tag-list">${createTagList(project.tags)}</div>
           <p>${project.description}</p>
@@ -130,54 +129,110 @@ function formatDate(value) {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: "UTC",
   }).format(new Date(value));
 }
 
-function renderBlogs(blogs) {
-  const grid = document.querySelector("#blogGrid");
-
-  if (!blogs.length) {
-    grid.innerHTML = `<article class="blog-card"><h3>No blogs yet</h3><p>Add a blog entry to blogs/blogs.json and it will appear here.</p></article>`;
-    return;
-  }
-
-  grid.innerHTML = blogs
-    .sort((a, b) => new Date(b.dateCreated) - new Date(a.dateCreated))
-    .map(
-      (blog) => `
-        <article class="blog-card">
-          <time datetime="${blog.dateCreated}">${formatDate(blog.dateCreated)}</time>
-          <h3>${blog.title}</h3>
-          <p>${blog.summary}</p>
-          <a class="text-link" href="${blog.link}" ${
-        blog.external ? 'target="_blank" rel="noreferrer"' : ""
-      }>Read blog</a>
-        </article>
-      `
-    )
-    .join("");
+function renderBlogs(grid, blogs) {
+  grid.replaceChildren(...blogs.map((blog) => {
+    const article = document.createElement("article");
+    article.className = "blog-card";
+    const date = document.createElement("time");
+    date.dateTime = blog.dateCreated;
+    date.textContent = formatDate(blog.dateCreated);
+    const body = document.createElement("div");
+    const title = document.createElement("h3");
+    const link = document.createElement("a");
+    link.href = blog.link;
+    link.textContent = blog.title;
+    if (blog.external) {
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+    }
+    const summary = document.createElement("p");
+    summary.textContent = blog.summary;
+    const type = document.createElement("span");
+    type.className = "blog-type";
+    type.textContent = blog.external ? "External" : "Article";
+    title.append(link);
+    body.append(title, summary);
+    article.append(date, body, type);
+    return article;
+  }));
 }
 
 async function loadBlogs() {
+  const grid = document.querySelector("#blogGrid");
   try {
-    const response = await fetch("blogs/blogs.json");
+    const response = await fetch("blogs/blogs.json", { cache: "no-cache" });
     if (!response.ok) {
       throw new Error(`Could not load blogs: ${response.status}`);
     }
     const blogs = await response.json();
-    renderBlogs(blogs);
+    blogs.sort((a, b) => b.dateCreated.localeCompare(a.dateCreated));
+    if (!blogs.length) {
+      grid.textContent = "No articles yet.";
+      return;
+    }
+    renderBlogs(grid, blogs.slice(0, 4));
+    if (blogs.length > 4) {
+      renderBlogs(document.querySelector("#extraBlogGrid"), blogs.slice(4));
+      document.querySelector("#moreBlogs").hidden = false;
+    }
   } catch (error) {
-    renderBlogs([
-      {
-        title: "Getting Started With the Portfolio Blog",
-        dateCreated: "2026-06-02",
-        link: "blogs/getting-started.html",
-        summary:
-          "A starter post showing the HTML blog format and how the JSON-driven blog section works.",
-      },
-    ]);
+    const link = document.createElement("a");
+    link.href = "blogs/ml-system-design-part-1.html";
+    link.textContent = "Browse the ML System Design series";
+    grid.replaceChildren("The article list could not load. ", link);
   }
 }
 
-renderProjects();
+function initWorkflow() {
+  const list = document.querySelector(".workflow-tabs");
+  const tabs = Array.from(list.querySelectorAll("button"));
+  const panels = tabs.map((tab) => document.getElementById(tab.dataset.panel));
+
+  function selectTab(index) {
+    tabs.forEach((tab, i) => {
+      tab.setAttribute("aria-selected", String(i === index));
+      tab.tabIndex = i === index ? 0 : -1;
+      panels[i].hidden = i !== index;
+    });
+  }
+
+  list.setAttribute("role", "tablist");
+  list.setAttribute("aria-label", "Ticket workflows");
+  tabs.forEach((tab, index) => {
+    const panel = panels[index];
+    tab.setAttribute("role", "tab");
+    tab.setAttribute("aria-controls", panel.id);
+    panel.setAttribute("role", "tabpanel");
+    panel.setAttribute("aria-labelledby", tab.id);
+    panel.tabIndex = 0;
+    tab.addEventListener("click", () => selectTab(index));
+    tab.addEventListener("keydown", (event) => {
+      let next;
+      switch (event.key) {
+        case "ArrowLeft": next = (index + tabs.length - 1) % tabs.length; break;
+        case "ArrowRight": next = (index + 1) % tabs.length; break;
+        case "Home": next = 0; break;
+        case "End": next = tabs.length - 1; break;
+        default: return;
+      }
+      event.preventDefault();
+      selectTab(next);
+      tabs[next].focus();
+    });
+  });
+
+  selectTab(0);
+  list.hidden = false;
+}
+
+const featuredProjects = projects.filter((project) => project.featured).slice(0, 4);
+renderProjects(document.querySelector("#projectGrid"), featuredProjects);
+const extraProjects = projects.filter((project) => !featuredProjects.includes(project));
+renderProjects(document.querySelector("#extraProjectGrid"), extraProjects);
+document.querySelector("#moreProjects").hidden = extraProjects.length === 0;
+initWorkflow();
 loadBlogs();

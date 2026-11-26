@@ -1,221 +1,200 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Portfolio of Upesh Jeengar, Data Scientist at FICO and IIT Guwahati Mathematics and Computing graduate."
-    />
-    <title>Upesh Jeengar | Data Scientist</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <header class="site-header">
-      <a class="brand" href="#home" aria-label="Upesh Jeengar home">
-        <span class="brand-mark">UJ</span>
-        <span>Upesh Jeengar</span>
-      </a>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Upesh Jeengar, AI engineer at Azentio. Production AI agents, enterprise support workflows, evaluation, and ML systems." />
+  <meta name="theme-color" content="#101411" />
+  <title>Upesh Jeengar | AI Engineer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=20261126" />
+  <script src="script.js?v=20261126" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#home">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner wrap">
+      <a class="brand" href="#home" aria-label="Upesh Jeengar home"><span class="brand-mark" aria-hidden="true">UJ</span><span>Upesh Jeengar</span></a>
       <nav aria-label="Primary navigation">
+        <a href="#work">Work</a>
         <a href="#about">About</a>
-        <a href="#skills">Skills</a>
         <a href="#projects">Projects</a>
-        <a href="#blogs">Blogs</a>
-        <a href="#resume">Resume</a>
-        <a href="#contact">Contact</a>
+        <a href="#blogs">Writing</a>
       </nav>
-    </header>
+      <a class="header-contact" href="#contact">Contact</a>
+    </div>
+  </header>
 
-    <main id="home">
-      <section class="hero section">
-        <div class="hero-copy">
-          <p class="eyebrow">Data Scientist at FICO · IIT Guwahati</p>
-          <h1>Building practical AI systems across analytics, ML, and cloud.</h1>
-          <p class="hero-text">
-            I am Upesh Jeengar, a Mathematics and Computing graduate from IIT Guwahati focused on
-            machine learning, predictive analytics, LLM systems,
-            production-minded data science, and open-source contributions.
-          </p>
-          <div class="hero-actions" aria-label="Social links">
-            <a class="button primary" href="mailto:upeshjeengar@gmail.com">Email me</a>
-            <a class="button" href="#resume">View resume</a>
-            <a class="button" href="https://github.com/Upeshjeengar" target="_blank" rel="noreferrer">GitHub</a>
-            <a class="button" href="https://www.linkedin.com/in/upesh-jeengar" target="_blank" rel="noreferrer">LinkedIn</a>
-            <a class="button" href="https://x.com/UpeshStats" target="_blank" rel="noreferrer">X</a>
-          </div>
+  <main id="home" tabindex="-1">
+    <section class="hero" aria-labelledby="name">
+      <img class="hero-image" src="assets/server-aisle.webp" alt="" width="1536" height="1024" fetchpriority="high" />
+      <div class="wrap hero-content">
+        <p class="eyebrow"><span></span> AI Engineer at Azentio</p>
+        <h1 id="name">Upesh<br />Jeengar<span>.</span></h1>
+        <p class="hero-lede">I build AI agents for enterprise support, from first-line ticket resolution to root-cause analysis for engineers.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#work">Explore my work</a>
+          <a class="button outline" href="mailto:upeshjeengar@gmail.com">Get in touch</a>
         </div>
-        <aside class="hero-panel" aria-label="AI system visual and profile highlights">
-          <img
-            src="https://images.pexels.com/photos/17483874/pexels-photo-17483874.png?auto=compress&cs=tinysrgb&w=1100"
-            alt="Abstract artificial intelligence neural network visualization"
-          />
-          <div class="signal-card signal-primary">
-            <span class="metric">75%</span>
-            <span class="metric-label">Cost Reduction after moving to GitHub</span>
-          </div>
-          <div class="signal-row">
-            <div class="signal-card">
-              <span class="metric">77%</span>
-              <span class="metric-label">loan approval model accuracy</span>
-            </div>
-            <div class="signal-card">
-              <span class="metric">90%</span>
-              <span class="metric-label">Recall@5 on VLM retrieval</span>
-            </div>
-          </div>
-        </aside>
-      </section>
+      </div>
+    </section>
 
-      <section id="resume" class="section resume-section">
-        <div class="section-heading resume-heading">
-          <div>
-            <p class="section-kicker">Resume</p>
-            <h2>Experience, projects, and technical depth.</h2>
-          </div>
-          <div class="resume-actions">
-            <a class="button primary" href="upesh-jeengar-resume.pdf" target="_blank" rel="noreferrer">Open resume</a>
-            <a class="button" href="upesh-jeengar-resume.pdf" download>Download PDF</a>
-          </div>
-        </div>
-        <div class="resume-viewer">
-          <object data="upesh-jeengar-resume.pdf" type="application/pdf" aria-label="Upesh Jeengar resume">
-            <p>Your browser cannot display the PDF. <a href="upesh-jeengar-resume.pdf" target="_blank" rel="noreferrer">Open the resume in a new tab</a>.</p>
-          </object>
-        </div>
-      </section>
+    <section class="facts" aria-label="Azentio work at a glance">
+      <dl class="wrap facts-inner">
+        <div><dt>Insurance products</dt><dd class="fact-number">2</dd><dd class="fact-note">Beyontec and Premia</dd></div>
+        <div><dt>Interns mentored</dt><dd class="fact-number">5</dd><dd class="fact-note">Across product agent launches</dd></div>
+        <div><dt>Audit findings validated</dt><dd class="fact-number">40+</dd><dd class="fact-note">Across QIIC and FQM</dd></div>
+      </dl>
+    </section>
 
-      <section id="about" class="section split-section">
+    <section class="section wrap" id="work" aria-labelledby="work-title">
+      <div class="case-intro">
         <div>
-          <p class="section-kicker">About me</p>
-          <h2>Machine learning engineer with a data scientist's operating rhythm.</h2>
+          <p class="kicker"><span></span> Featured case study / Azentio</p>
+          <h2 id="work-title">INAIA<span>.</span></h2>
         </div>
-        <div class="prose">
-          <p>
-            I am currently learning LLM Evaluation techniques and GRPO finetuning. I have in depth knowledge of LLM architecture, SFT and GRPO finetuning, RAG and vector DBs, Computer vision, LangChain, vLLM and LLMOps, Transformers, Unsloth.
-          </p>
-          <p>
-            I currently work at Fair Isaac Corporation in Bangalore, where I build
-            analytics and ML workflows across synthetic data generation, predictive
-            systems, LLM-assisted financial variable logic, AWS infrastructure,
-            and open-source contributions.
-          </p>
-          <p>
-            Before that, I completed my B.Tech in Mathematics and Computing at IIT
-            Guwahati. I like projects that combine modeling depth with usable
-            software: clean APIs, measurable evaluation, and workflows people can
-            actually run.
-          </p>
-        </div>
-      </section>
+        <p class="lead">A multi-agent support system for insurance products. INAIA connects incoming Jira tickets to the people, product context, and engineering tools needed to resolve them.</p>
+      </div>
 
-      <section id="skills" class="section">
-        <div class="section-heading">
-          <p class="section-kicker">Skills</p>
-          <h2>Core stack</h2>
-        </div>
-        <div class="skill-grid">
+      <div class="case-layout">
+        <div class="case-contributions">
           <article>
-            <h3>Languages</h3>
-            <ul>
-              <li>Python</li>
-              <li>C/C++</li>
-              <li>SQL</li>
-              <li>JavaScript</li>
-              <li>HTML/CSS</li>
-              <li>Java</li>
-              <li>Terraform</li>
-              <li>Bash/Shell</li>
-            </ul>
+            <p class="label">Beyontec</p>
+            <h3>Launched the insurance support agent</h3>
+            <p>Launched INAIA for Beyontec, bringing AI-assisted triage and resolution into the Jira support workflow.</p>
           </article>
           <article>
-            <h3>ML & AI</h3>
-            <ul>
-              <li>LLM architecture</li>
-              <li>SFT and GRPO finetuning</li>
-              <li>RAG and vector DBs</li>
-              <li>Computer vision</li>
-              <li>LangChain</li>
-              <li>vLLM and LLMOps</li>
-              <li>Transformers</li>
-              <li>Unsloth</li>
-            </ul>
+            <p class="label">Premia</p>
+            <h3>Designed for a legacy codebase</h3>
+            <p>Built and maintain the Premia agent. Defined how it works with legacy Oracle Forms modules (FMBs) and XML artifacts during investigation.</p>
           </article>
           <article>
-            <h3>Data science</h3>
-            <ul>
-              <li>Pandas</li>
-              <li>NumPy</li>
-              <li>Scikit-learn</li>
-              <li>PyTorch</li>
-              <li>Matplotlib</li>
-              <li>Seaborn</li>
-              <li>MLflow</li>
-              <li>DVC</li>
-            </ul>
-          </article>
-          <article>
-            <h3>Cloud & tools</h3>
-            <ul>
-              <li>AWS IAM, S3, EC2, Lambda</li>
-              <li>AWS Bedrock, VPC, SageMaker, EFS</li>
-              <li>Docker</li>
-              <li>GitHub Actions</li>
-              <li>Azure</li>
-              <li>Linux</li>
-              <li>Tableau</li>
-              <li>Excel</li>
-            </ul>
+            <p class="label">Release validation</p>
+            <h3>Tested for release and adoption</h3>
+            <p>Worked on user acceptance testing (UAT), vulnerability assessment and penetration testing (VAPT), user adoption, and A/B testing to measure the effect on support workflows.</p>
           </article>
         </div>
-      </section>
 
-      <section id="projects" class="section">
-        <div class="section-heading project-heading">
-          <div>
-            <p class="section-kicker">Projects</p>
-            <h2>Selected work</h2>
+        <section class="workflow" aria-labelledby="flow-title">
+          <div class="workflow-header">
+            <p class="label">System walkthrough</p>
+            <h3 id="flow-title">How a ticket moves through INAIA</h3>
           </div>
-          <a class="text-link" href="https://github.com/Upeshjeengar?tab=repositories" target="_blank" rel="noreferrer">
-            View all GitHub repos
-          </a>
+          <div class="workflow-tabs" hidden>
+            <button type="button" id="tab-triage" data-panel="flow-triage">Triage</button>
+            <button type="button" id="tab-l1" data-panel="flow-l1">L1 resolution</button>
+            <button type="button" id="tab-engineer" data-panel="flow-engineer">L2 / L4</button>
+          </div>
+          <div class="workflow-panel" id="flow-triage">
+            <h4>Route the ticket to the right support tier</h4>
+            <ol>
+              <li><span>Read</span><p>A backend triage agent reads ticket details from Jira Service Management.</p></li>
+              <li><span>Classify</span><p>It categorizes the issue as L1, L2, L3, or L4.</p></li>
+              <li><span>Assign</span><p>It weighs region and current ticket load to find an eligible engineer with the lightest queue.</p></li>
+            </ol>
+          </div>
+          <div class="workflow-panel" id="flow-l1">
+            <h4>Resolve first-line issues inside Jira</h4>
+            <ol>
+              <li><span>Attempt resolution</span><p>The L1 backend handles eligible requests directly, without an engineer in the routine path.</p></li>
+              <li><span>Ask in context</span><p>When details are missing, INAIA posts a clarification on the Jira ticket through the support integration.</p></li>
+              <li><span>Resume</span><p>Jira automation sends the customer's reply back to INAIA so it can continue the same case.</p></li>
+            </ol>
+          </div>
+          <div class="workflow-panel" id="flow-engineer">
+            <h4>Give engineers a controlled path from ticket to fix</h4>
+            <ol>
+              <li><span>Start from the ticket</span><p>Engineers sign in with Atlassian to access their recent tickets. INAIA uses the relevant repository in an isolated Docker workspace for root-cause analysis with the Claude Agent SDK.</p></li>
+              <li><span>Verify database issues</span><p>For L2 cases, INAIA suggests diagnostic SQL. Engineers run it on production Oracle and share the results. INAIA uses sample data and has no production database access.</p></li>
+              <li><span>Propose code changes</span><p>For L4 bugs and change requests, the workflow can prepare a patch and open a Bitbucket pull request under the engineer's identity for review.</p></li>
+            </ol>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="delivery" aria-labelledby="delivery-title">
+      <div class="wrap section">
+        <p class="kicker"><span></span> Production engineering / Azentio</p>
+        <h2 id="delivery-title">What it takes to ship agents.</h2>
+        <div class="delivery-grid">
+          <article><p class="label">Security assurance</p><h3>40+ findings validated</h3><p>Built a defensive review harness for Fable 5 audit findings across QIIC and FQM. A knowledge graph connected product documentation, code and database context, industry research, and security practices so findings could be assessed against product behavior.</p></article>
+          <article><p class="label">Quality engineering</p><h3>Automated agent testing</h3><p>Built repeatable tests for agent workflows, so changes could be checked against known support scenarios during development and release.</p></article>
+          <article><p class="label">Infrastructure</p><h3>Moved agent servers in-house</h3><p>Worked on the migration from Oracle-hosted servers to in-house Nutanix infrastructure. Enabled, tested, and verified Jira connectivity from the new environment.</p></article>
+          <article><p class="label">Team enablement</p><h3>Mentored five interns</h3><p>Guided interns working on agent delivery and helped teams launch agents across product lines.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section wrap about" id="about" aria-labelledby="about-title">
+      <div>
+        <p class="kicker"><span></span> About</p>
+        <h2 id="about-title">From applied ML to production agents.</h2>
+      </div>
+      <div class="about-copy">
+        <p>I work on AI systems at Azentio, where the job spans agent design, legacy software, release testing, and the people who use these tools every day.</p>
+        <p>Previously, I was an Associate Data Scientist at FICO, where I worked on predictive analytics, synthetic data, and AWS-based fraud tooling. I earned a B.Tech in Mathematics and Computing from IIT Guwahati. Outside work, I build ML projects, contribute to open source, and write about system design.</p>
+        <div class="social-links">
+          <a href="https://github.com/Upeshjeengar" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://www.linkedin.com/in/upesh-jeengar" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://x.com/UpeshStats" target="_blank" rel="noopener noreferrer">X</a>
+        </div>
+      </div>
+      <div class="stack" id="skills">
+        <h3>Technical stack</h3>
+        <dl>
+          <div><dt>Agents &amp; retrieval</dt><dd>Claude Agent SDK, LangGraph, LangChain, RAG, vector databases</dd></div>
+          <div><dt>Applied ML</dt><dd>PyTorch, Transformers, scikit-learn, MLflow, evaluation, SFT and GRPO</dd></div>
+          <div><dt>Infrastructure</dt><dd>Docker, AWS, Linux, GitHub Actions, Jira, Bitbucket, Oracle</dd></div>
+          <div><dt>Languages</dt><dd>Python, SQL, Java, JavaScript, C/C++, Bash</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="project-section" id="projects" aria-labelledby="projects-title">
+      <div class="wrap section">
+        <div class="section-heading">
+          <div><p class="kicker"><span></span> Projects &amp; open source</p><h2 id="projects-title">Selected builds.</h2></div>
+          <a class="text-link" href="https://github.com/Upeshjeengar?tab=repositories" target="_blank" rel="noopener noreferrer">All GitHub repositories</a>
         </div>
         <div class="project-grid" id="projectGrid"></div>
-      </section>
+        <details id="moreProjects" class="more-items" hidden>
+          <summary>More projects</summary>
+          <div class="project-grid" id="extraProjectGrid"></div>
+        </details>
+      </div>
+    </section>
 
-      <section id="blogs" class="section">
-        <div class="section-heading">
-          <p class="section-kicker">Blogs</p>
-          <h2>Writing</h2>
-          
+    <section class="section wrap" id="blogs" aria-labelledby="writing-title">
+      <div class="section-heading">
+        <div><p class="kicker"><span></span> Writing</p><h2 id="writing-title">Field notes.</h2></div>
+        <a class="text-link" href="blogs/ml-system-design-part-1.html">ML System Design series</a>
+      </div>
+      <div class="blog-grid" id="blogGrid" aria-live="polite"><p>Loading articles...</p></div>
+      <details id="moreBlogs" class="more-items" hidden>
+        <summary>More articles</summary>
+        <div class="blog-grid" id="extraBlogGrid"></div>
+      </details>
+    </section>
+
+    <section class="contact" id="contact" aria-labelledby="contact-title">
+      <div class="wrap section">
+        <p class="kicker"><span></span> Contact</p>
+        <h2 id="contact-title">Let's talk AI engineering.</h2>
+        <a class="button primary" href="mailto:upeshjeengar@gmail.com">upeshjeengar@gmail.com</a>
+        <div class="social-links">
+          <a href="https://github.com/Upeshjeengar" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://www.linkedin.com/in/upesh-jeengar" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://x.com/UpeshStats" target="_blank" rel="noopener noreferrer">X</a>
         </div>
-        <div class="blog-grid" id="blogGrid" aria-live="polite"></div>
-      </section>
+      </div>
+    </section>
+  </main>
 
-      <section id="contact" class="section contact-section">
-        <div>
-          <p class="section-kicker">Contact</p>
-          <h2>Open to sharp ML, data, and AI engineering conversations.</h2>
-        </div>
-        <div class="contact-actions">
-          <a href="mailto:upeshjeengar@gmail.com">upeshjeengar@gmail.com</a>
-          <a href="https://github.com/Upeshjeengar" target="_blank" rel="noreferrer">github.com/Upeshjeengar</a>
-          <a href="https://www.linkedin.com/in/upesh-jeengar" target="_blank" rel="noreferrer">linkedin.com/in/upesh-jeengar</a>
-          <a href="https://x.com/UpeshStats" target="_blank" rel="noreferrer">x.com/UpeshStats</a>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <span>Upesh Jeengar</span>
-      <span>Data Science · Machine Learning · AI Systems</span>
-    </footer>
-
-    <script src="script.js"></script>
-  </body>
+  <footer class="site-footer">
+    <div class="wrap"><span>Upesh Jeengar</span><a href="#home">Back to top</a></div>
+  </footer>
+</body>
 </html>
