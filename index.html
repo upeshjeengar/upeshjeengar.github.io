@@ -4,13 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Upesh Jeengar, AI engineer at Azentio and IIT Guwahati graduate. Enterprise AI agents, vision-language models, and scientific machine learning." />
-  <meta name="theme-color" content="#0c1016" />
+  <meta name="theme-color" content="#101310" />
   <title>Upesh Jeengar | AI Engineer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20261126d" />
-  <script src="script.js?v=20261126d" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20261126e" />
+  <script src="script.js?v=20261126e" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#home">Skip to content</a>
@@ -19,9 +19,9 @@
     <div class="header-inner wrap">
       <a class="brand" href="#home" aria-label="Upesh Jeengar home"><span class="brand-mark" aria-hidden="true">UJ</span><span>Upesh Jeengar</span></a>
       <nav aria-label="Primary navigation">
+        <a href="#trace">Agent demo</a>
         <a href="#azentio">Azentio</a>
         <a href="#projects">Projects</a>
-        <a href="#work">Background</a>
         <a href="#blogs">Writing</a>
       </nav>
       <a class="header-contact" href="#contact">Contact</a>
@@ -30,16 +30,53 @@
 
   <main id="home" tabindex="-1">
     <section class="hero" aria-labelledby="name">
-      <img class="hero-image" src="assets/accelerator-board.webp" alt="" width="1536" height="1024" fetchpriority="high" />
+      <img class="hero-image" src="assets/research-workbench.webp" alt="" width="1536" height="1024" fetchpriority="high" />
       <div class="wrap hero-content">
         <p class="eyebrow">AI engineer <span aria-hidden="true">/</span> IIT Guwahati '25</p>
         <h1 id="name">Upesh Jeengar<span>.</span></h1>
-        <p class="hero-lede">I build AI assistants for support engineers at Azentio. Outside work, I've trained a small vision-language model and used neural networks to solve wave equations.</p>
+        <p class="hero-lede">I build AI assistants for support engineers at Azentio. My side projects range from vision-language models to neural solvers for wave equations.</p>
         <div class="hero-actions">
-          <a class="button primary" href="#azentio">Current work</a>
-          <a class="button outline" href="#projects">Projects</a>
+          <a class="button primary" href="#trace">Try an agent workflow</a>
+          <a class="button outline" href="#azentio">Current work</a>
           <a class="button outline" href="https://github.com/Upeshjeengar" target="_blank" rel="noopener noreferrer">GitHub</a>
         </div>
+      </div>
+    </section>
+
+    <section class="trace-section" id="trace" aria-labelledby="trace-title">
+      <div class="trace-frame wrap" data-state="idle">
+        <header class="trace-header">
+          <div class="trace-title"><span class="trace-indicator" aria-hidden="true"></span><h2 id="trace-title">Agent trace</h2><span class="trace-sample">Simulation</span></div>
+          <div class="trace-controls">
+            <label class="sr-only" for="traceScenario">Sample request</label>
+            <select id="traceScenario" disabled>
+              <option value="access">Software access</option>
+              <option value="vendor">Vendor onboarding</option>
+              <option value="policy">Policy question</option>
+            </select>
+            <button id="tracePlay" type="button" disabled><span class="trace-play-icon" aria-hidden="true"></span><span id="tracePlayLabel">Run trace</span></button>
+          </div>
+        </header>
+        <ol class="trace-steps" aria-label="Workflow steps">
+          <li><button type="button" data-step="0" aria-current="step" disabled><span class="trace-index">01</span><span class="trace-stage">Classify request</span></button></li>
+          <li><button type="button" data-step="1" disabled><span class="trace-index">02</span><span class="trace-stage">Find policy</span></button></li>
+          <li><button type="button" data-step="2" disabled><span class="trace-index">03</span><span class="trace-stage">Check approval</span></button></li>
+          <li><button type="button" data-step="3" disabled><span class="trace-index">04</span><span class="trace-stage">Record decision</span></button></li>
+        </ol>
+        <div class="trace-output">
+          <div>
+            <p class="trace-caption">Sample request</p>
+            <p id="traceRequest">Can I get access to the analytics workspace?</p>
+          </div>
+          <div>
+            <p class="trace-caption" id="traceDecision">Classify request</p>
+            <p id="traceResult">Software access request detected.</p>
+          </div>
+        </div>
+        <footer class="trace-footer">
+          <span id="traceStatus" aria-live="polite">Ready</span>
+          <a href="https://github.com/upeshjeengar/enterprise-ai-automation" target="_blank" rel="noopener noreferrer">CompliFlow Lite on GitHub</a>
+        </footer>
       </div>
     </section>
 
@@ -190,10 +227,6 @@
           <div><dt>Data &amp; experiments</dt><dd>SQL, pandas, MLflow, DVC</dd></div>
         </dl>
       </div>
-      <figure class="campus">
-        <img src="assets/iitg-campus.jpg" width="800" height="450" alt="IIT Guwahati's academic complex with the Brahmaputra behind it" loading="lazy" />
-        <figcaption>IIT Guwahati campus &middot; <a href="https://commons.wikimedia.org/wiki/File:IITG_acad_complex.jpg" target="_blank" rel="noopener noreferrer">Satyadeep Karnati, public domain</a></figcaption>
-      </figure>
     </section>
 
     <section class="writing" id="blogs" aria-labelledby="writing-title">

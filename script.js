@@ -58,6 +58,140 @@ const projects = [
   },
 ];
 
+const traceScenarios = {
+  access: {
+    request: "Can I get access to the analytics workspace?",
+    steps: [
+      ["Classify request", "Software access request detected."],
+      ["Find policy", "The sample access policy covers this workspace."],
+      ["Check approval", "The workspace owner needs to approve the request."],
+      ["Record decision", "Request drafted and marked as pending review."],
+    ],
+  },
+  vendor: {
+    request: "We need to onboard a new design vendor.",
+    steps: [
+      ["Classify request", "Vendor onboarding request detected."],
+      ["Find policy", "Loaded the sample vendor onboarding checklist."],
+      ["Check approval", "Route the proposal to procurement for review."],
+      ["Record decision", "Onboarding draft saved for a human reviewer."],
+    ],
+  },
+  policy: {
+    request: "Who can approve an analytics workspace request?",
+    steps: [
+      ["Classify request", "This is a policy question."],
+      ["Find policy", "Found the relevant section of the sample access policy."],
+      ["Draft answer", "The workspace owner reviews and approves access."],
+      ["Cite policy", "Answer returned with its source. No request was created."],
+    ],
+  },
+};
+
+function initTrace() {
+  const frame = document.querySelector(".trace-frame");
+  const scenarioSelect = document.querySelector("#traceScenario");
+  const playButton = document.querySelector("#tracePlay");
+  const playLabel = document.querySelector("#tracePlayLabel");
+  const request = document.querySelector("#traceRequest");
+  const stage = document.querySelector("#traceDecision");
+  const result = document.querySelector("#traceResult");
+  const status = document.querySelector("#traceStatus");
+  const steps = Array.from(frame.querySelectorAll("[data-step]"));
+  let index = 0;
+  let timer;
+
+  function render(state) {
+    const scenario = traceScenarios[scenarioSelect.value];
+    frame.dataset.state = state;
+    frame.style.setProperty("--trace-progress", (index + Number(state === "playing" || state === "done")) / steps.length);
+    request.textContent = scenario.request;
+    [stage.textContent, result.textContent] = scenario.steps[index];
+    steps.forEach((button, position) => {
+      button.querySelector(".trace-stage").textContent = scenario.steps[position][0];
+      button.classList.toggle("is-complete", position < index || state === "done");
+      if (position === index) button.setAttribute("aria-current", "step");
+      else button.removeAttribute("aria-current");
+    });
+    const progress = `Step ${index + 1} of ${steps.length}`;
+    if (state === "playing") {
+      playLabel.textContent = "Pause";
+      status.textContent = progress;
+    } else if (state === "done") {
+      playLabel.textContent = "Replay";
+      status.textContent = "Trace complete";
+    } else if (state === "paused") {
+      playLabel.textContent = index === steps.length - 1 ? "Replay" : "Resume";
+      status.textContent = progress + " · Paused";
+    } else {
+      playLabel.textContent = "Run trace";
+      status.textContent = "Ready";
+    }
+  }
+
+  function advance() {
+    timer = window.setTimeout(() => {
+      if (index === steps.length - 1) {
+        render("done");
+        return;
+      }
+      index += 1;
+      render("playing");
+      advance();
+    }, 950);
+  }
+
+  function play() {
+    if (index === steps.length - 1) index = 0;
+    render("playing");
+    advance();
+  }
+
+  let autoplayObserver;
+  function stopAutoplay() {
+    autoplayObserver?.disconnect();
+  }
+
+  scenarioSelect.addEventListener("change", () => {
+    stopAutoplay();
+    window.clearTimeout(timer);
+    index = 0;
+    render("idle");
+  });
+  playButton.addEventListener("click", () => {
+    stopAutoplay();
+    if (frame.dataset.state === "playing") {
+      window.clearTimeout(timer);
+      render("paused");
+    } else {
+      play();
+    }
+  });
+  steps.forEach((button, position) => {
+    button.disabled = false;
+    button.addEventListener("click", () => {
+      stopAutoplay();
+      window.clearTimeout(timer);
+      index = position;
+      render("paused");
+    });
+  });
+  scenarioSelect.disabled = false;
+  playButton.disabled = false;
+  render("idle");
+
+  if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    autoplayObserver = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting || document.hidden) return;
+      stopAutoplay();
+      play();
+    }, { threshold: 0.33 });
+    autoplayObserver.observe(frame);
+  }
+}
+
+initTrace();
+
 function renderProjects(category) {
   const grid = document.querySelector("#projectGrid");
   const entries = category === "all"
