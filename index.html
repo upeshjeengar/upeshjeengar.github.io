@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20261126e" />
-  <script src="script.js?v=20261126e" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20261126f" />
+  <script src="script.js?v=20261126f" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#home">Skip to content</a>
@@ -19,9 +19,9 @@
     <div class="header-inner wrap">
       <a class="brand" href="#home" aria-label="Upesh Jeengar home"><span class="brand-mark" aria-hidden="true">UJ</span><span>Upesh Jeengar</span></a>
       <nav aria-label="Primary navigation">
-        <a href="#trace">Agent demo</a>
         <a href="#azentio">Azentio</a>
         <a href="#projects">Projects</a>
+        <a href="#trace">Agent demo</a>
         <a href="#blogs">Writing</a>
       </nav>
       <a class="header-contact" href="#contact">Contact</a>
@@ -36,47 +36,10 @@
         <h1 id="name">Upesh Jeengar<span>.</span></h1>
         <p class="hero-lede">I build AI assistants for support engineers at Azentio. My side projects range from vision-language models to neural solvers for wave equations.</p>
         <div class="hero-actions">
-          <a class="button primary" href="#trace">Try an agent workflow</a>
-          <a class="button outline" href="#azentio">Current work</a>
+          <a class="button primary" href="#azentio">Explore Azentio work</a>
+          <a class="button outline" href="#projects">Personal projects</a>
           <a class="button outline" href="https://github.com/Upeshjeengar" target="_blank" rel="noopener noreferrer">GitHub</a>
         </div>
-      </div>
-    </section>
-
-    <section class="trace-section" id="trace" aria-labelledby="trace-title">
-      <div class="trace-frame wrap" data-state="idle">
-        <header class="trace-header">
-          <div class="trace-title"><span class="trace-indicator" aria-hidden="true"></span><h2 id="trace-title">Agent trace</h2><span class="trace-sample">Simulation</span></div>
-          <div class="trace-controls">
-            <label class="sr-only" for="traceScenario">Sample request</label>
-            <select id="traceScenario" disabled>
-              <option value="access">Software access</option>
-              <option value="vendor">Vendor onboarding</option>
-              <option value="policy">Policy question</option>
-            </select>
-            <button id="tracePlay" type="button" disabled><span class="trace-play-icon" aria-hidden="true"></span><span id="tracePlayLabel">Run trace</span></button>
-          </div>
-        </header>
-        <ol class="trace-steps" aria-label="Workflow steps">
-          <li><button type="button" data-step="0" aria-current="step" disabled><span class="trace-index">01</span><span class="trace-stage">Classify request</span></button></li>
-          <li><button type="button" data-step="1" disabled><span class="trace-index">02</span><span class="trace-stage">Find policy</span></button></li>
-          <li><button type="button" data-step="2" disabled><span class="trace-index">03</span><span class="trace-stage">Check approval</span></button></li>
-          <li><button type="button" data-step="3" disabled><span class="trace-index">04</span><span class="trace-stage">Record decision</span></button></li>
-        </ol>
-        <div class="trace-output">
-          <div>
-            <p class="trace-caption">Sample request</p>
-            <p id="traceRequest">Can I get access to the analytics workspace?</p>
-          </div>
-          <div>
-            <p class="trace-caption" id="traceDecision">Classify request</p>
-            <p id="traceResult">Software access request detected.</p>
-          </div>
-        </div>
-        <footer class="trace-footer">
-          <span id="traceStatus" aria-live="polite">Ready</span>
-          <a href="https://github.com/upeshjeengar/enterprise-ai-automation" target="_blank" rel="noopener noreferrer">CompliFlow Lite on GitHub</a>
-        </footer>
       </div>
     </section>
 
@@ -86,12 +49,50 @@
           <div><p class="kicker">Current role / AI Engineer</p><h2 id="azentio-title">Building at Azentio</h2></div>
           <p>I build AI assistants for insurance support, test how they behave before release, and mentor interns working on agent launches across products.</p>
         </div>
+        <article class="company-feature" aria-labelledby="insurance-title">
+          <div class="company-feature-heading" data-animate>
+            <div>
+              <p class="label">Product launch</p>
+              <h3 id="insurance-title">Insurance support agent</h3>
+              <p>I helped launch an assistant that handles routine insurance support questions and gives engineers a starting point when a ticket needs investigation.</p>
+            </div>
+            <p class="impact-metric"><strong>52%</strong> <span>faster ticket resolution</span></p>
+          </div>
+          <section class="trace-frame insurance-trace" data-trace="insurance" data-state="idle" aria-labelledby="insurance-trace-title">
+            <header class="trace-header">
+              <div class="trace-title"><span class="trace-indicator" aria-hidden="true"></span><h4 id="insurance-trace-title">Support ticket walkthrough</h4><span class="trace-sample">Illustrative</span></div>
+              <div class="trace-controls">
+                <label class="sr-only" for="ticketScenario">Sample support ticket</label>
+                <select id="ticketScenario" data-trace-input disabled>
+                  <option value="routine">Routine question</option>
+                  <option value="investigate">Issue investigation</option>
+                </select>
+                <button type="button" data-trace-play disabled><span class="trace-play-icon" aria-hidden="true"></span><span data-trace-play-label>Run trace</span></button>
+              </div>
+            </header>
+            <ol class="trace-steps" aria-label="Support workflow steps">
+              <li><button type="button" data-step="0" aria-current="step" disabled><span class="trace-index">01</span><span class="trace-stage">Read ticket</span></button></li>
+              <li><button type="button" data-step="1" disabled><span class="trace-index">02</span><span class="trace-stage">Find guidance</span></button></li>
+              <li><button type="button" data-step="2" disabled><span class="trace-index">03</span><span class="trace-stage">Draft answer</span></button></li>
+              <li><button type="button" data-step="3" disabled><span class="trace-index">04</span><span class="trace-stage">Resolve ticket</span></button></li>
+            </ol>
+            <div class="trace-output">
+              <div>
+                <p class="trace-caption">Sample ticket</p>
+                <p data-trace-request>Where can I find my policy schedule?</p>
+              </div>
+              <div>
+                <p class="trace-caption" data-trace-stage>Read ticket</p>
+                <p data-trace-result>The customer is looking for a policy document.</p>
+              </div>
+            </div>
+            <footer class="trace-footer">
+              <span data-trace-status aria-live="polite">Ready</span>
+              <span>Fictional tickets</span>
+            </footer>
+          </section>
+        </article>
         <div class="company-grid">
-          <article class="company-project" data-animate>
-            <p class="label">Product launch</p>
-            <h3>Insurance support agent launch</h3>
-            <p>I helped launch an insurance support assistant. It handles routine questions and gives engineers a starting point for cases that need investigation.</p>
-          </article>
           <article class="company-project" data-animate>
             <p class="label">Agent architecture</p>
             <h3>Legacy insurance support agent</h3>
@@ -113,9 +114,46 @@
 
     <section class="section wrap" id="projects" aria-labelledby="projects-title">
       <div class="section-heading" data-animate>
-        <div><p class="kicker">Research &amp; engineering</p><h2 id="projects-title">Selected projects</h2></div>
+        <div><p class="kicker">Research &amp; engineering</p><h2 id="projects-title">Personal projects</h2></div>
         <a class="text-link" href="https://github.com/Upeshjeengar?tab=repositories" target="_blank" rel="noopener noreferrer">All repositories</a>
       </div>
+      <section class="personal-trace" id="trace" aria-labelledby="trace-title">
+        <div class="trace-frame" data-trace="personal" data-state="idle">
+          <header class="trace-header">
+            <div class="trace-title"><span class="trace-indicator" aria-hidden="true"></span><h3 id="trace-title">CompliFlow Lite trace</h3><span class="trace-sample">Simulation</span></div>
+            <div class="trace-controls">
+              <label class="sr-only" for="traceScenario">Sample request</label>
+              <select id="traceScenario" data-trace-input disabled>
+                <option value="access">Software access</option>
+                <option value="vendor">Vendor onboarding</option>
+                <option value="policy">Policy question</option>
+              </select>
+              <button id="tracePlay" data-trace-play type="button" disabled><span class="trace-play-icon" aria-hidden="true"></span><span id="tracePlayLabel" data-trace-play-label>Run trace</span></button>
+            </div>
+          </header>
+          <ol class="trace-steps" aria-label="Workflow steps">
+            <li><button type="button" data-step="0" aria-current="step" disabled><span class="trace-index">01</span><span class="trace-stage">Classify request</span></button></li>
+            <li><button type="button" data-step="1" disabled><span class="trace-index">02</span><span class="trace-stage">Find policy</span></button></li>
+            <li><button type="button" data-step="2" disabled><span class="trace-index">03</span><span class="trace-stage">Check approval</span></button></li>
+            <li><button type="button" data-step="3" disabled><span class="trace-index">04</span><span class="trace-stage">Record decision</span></button></li>
+          </ol>
+          <div class="trace-output">
+            <div>
+              <p class="trace-caption">Sample request</p>
+              <p id="traceRequest" data-trace-request>Can I get access to the analytics workspace?</p>
+            </div>
+            <div>
+              <p class="trace-caption" id="traceDecision" data-trace-stage>Classify request</p>
+              <p id="traceResult" data-trace-result>Software access request detected.</p>
+            </div>
+          </div>
+          <footer class="trace-footer">
+            <span id="traceStatus" data-trace-status aria-live="polite">Ready</span>
+            <a href="https://github.com/upeshjeengar/enterprise-ai-automation" target="_blank" rel="noopener noreferrer">CompliFlow Lite on GitHub</a>
+          </footer>
+        </div>
+      </section>
+
       <div class="workbench" data-animate>
         <div class="work-tabs" hidden>
           <button type="button" id="tab-vlm" aria-controls="case-vlm">Vision-language model</button>

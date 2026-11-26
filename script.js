@@ -58,7 +58,7 @@ const projects = [
   },
 ];
 
-const traceScenarios = {
+const personalScenarios = {
   access: {
     request: "Can I get access to the analytics workspace?",
     steps: [
@@ -88,21 +88,41 @@ const traceScenarios = {
   },
 };
 
-function initTrace() {
-  const frame = document.querySelector(".trace-frame");
-  const scenarioSelect = document.querySelector("#traceScenario");
-  const playButton = document.querySelector("#tracePlay");
-  const playLabel = document.querySelector("#tracePlayLabel");
-  const request = document.querySelector("#traceRequest");
-  const stage = document.querySelector("#traceDecision");
-  const result = document.querySelector("#traceResult");
-  const status = document.querySelector("#traceStatus");
+const insuranceScenarios = {
+  routine: {
+    request: "Where can I find my policy schedule?",
+    steps: [
+      ["Read ticket", "The customer is looking for a policy document."],
+      ["Find guidance", "The assistant finds help material about locating documents."],
+      ["Draft answer", "The assistant drafts a reply using the help material."],
+      ["Resolve ticket", "The reply is sent and this sample ticket is resolved."],
+    ],
+  },
+  investigate: {
+    request: "My updated policy details still look wrong.",
+    steps: [
+      ["Read ticket", "The customer reports a mismatch after a policy update."],
+      ["Gather context", "The assistant organizes what the customer expected and what they saw."],
+      ["Prepare handoff", "The assistant summarizes the issue and flags what still needs checking."],
+      ["Engineer review", "An engineer receives the summary and continues the investigation."],
+    ],
+  },
+};
+
+function initTrace(frame, scenarios) {
+  const scenarioSelect = frame.querySelector("[data-trace-input]");
+  const playButton = frame.querySelector("[data-trace-play]");
+  const playLabel = frame.querySelector("[data-trace-play-label]");
+  const request = frame.querySelector("[data-trace-request]");
+  const stage = frame.querySelector("[data-trace-stage]");
+  const result = frame.querySelector("[data-trace-result]");
+  const status = frame.querySelector("[data-trace-status]");
   const steps = Array.from(frame.querySelectorAll("[data-step]"));
   let index = 0;
   let timer;
 
   function render(state) {
-    const scenario = traceScenarios[scenarioSelect.value];
+    const scenario = scenarios[scenarioSelect.value];
     frame.dataset.state = state;
     frame.style.setProperty("--trace-progress", (index + Number(state === "playing" || state === "done")) / steps.length);
     request.textContent = scenario.request;
@@ -190,7 +210,8 @@ function initTrace() {
   }
 }
 
-initTrace();
+initTrace(document.querySelector('[data-trace="insurance"]'), insuranceScenarios);
+initTrace(document.querySelector('[data-trace="personal"]'), personalScenarios);
 
 function renderProjects(category) {
   const grid = document.querySelector("#projectGrid");
