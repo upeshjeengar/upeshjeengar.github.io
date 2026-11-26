@@ -125,6 +125,17 @@ workButtons.forEach((button, index) => {
 selectWork(0);
 workTabs.hidden = false;
 
+if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add("is-in-view");
+      observer.unobserve(entry.target);
+    }
+  }, { threshold: 0.15 });
+  document.querySelectorAll("[data-animate]").forEach((element) => observer.observe(element));
+}
+
 function formatDate(value) {
   return new Intl.DateTimeFormat("en", {
     month: "short",

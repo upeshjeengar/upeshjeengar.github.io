@@ -3,24 +3,25 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Upesh Jeengar, AI engineer and IIT Guwahati graduate. Selected work in scientific machine learning, enterprise software, and applied AI." />
+  <meta name="description" content="Upesh Jeengar, AI engineer at Azentio and IIT Guwahati graduate. Enterprise AI agents, vision-language models, and scientific machine learning." />
   <meta name="theme-color" content="#0c1016" />
   <title>Upesh Jeengar | AI Engineer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20261126c" />
-  <script src="script.js?v=20261126c" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20261126d" />
+  <script src="script.js?v=20261126d" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#home">Skip to content</a>
   <header class="site-header">
+    <div class="reading-progress" aria-hidden="true"></div>
     <div class="header-inner wrap">
       <a class="brand" href="#home" aria-label="Upesh Jeengar home"><span class="brand-mark" aria-hidden="true">UJ</span><span>Upesh Jeengar</span></a>
       <nav aria-label="Primary navigation">
+        <a href="#azentio">Azentio</a>
         <a href="#projects">Projects</a>
-        <a href="#work">Experience</a>
-        <a href="#about">About</a>
+        <a href="#work">Background</a>
         <a href="#blogs">Writing</a>
       </nav>
       <a class="header-contact" href="#contact">Contact</a>
@@ -33,20 +34,52 @@
       <div class="wrap hero-content">
         <p class="eyebrow">AI engineer <span aria-hidden="true">/</span> IIT Guwahati '25</p>
         <h1 id="name">Upesh Jeengar<span>.</span></h1>
-        <p class="hero-lede">I train ML models and build software around them. My recent work includes a small vision-language model and an agent for employee approvals.</p>
+        <p class="hero-lede">I build AI assistants for support engineers at Azentio. Outside work, I've trained a small vision-language model and used neural networks to solve wave equations.</p>
         <div class="hero-actions">
-          <a class="button primary" href="#projects">See the projects</a>
+          <a class="button primary" href="#azentio">Current work</a>
+          <a class="button outline" href="#projects">Projects</a>
           <a class="button outline" href="https://github.com/Upeshjeengar" target="_blank" rel="noopener noreferrer">GitHub</a>
         </div>
       </div>
     </section>
 
+    <section class="company-work" id="azentio" aria-labelledby="azentio-title">
+      <div class="wrap section">
+        <div class="section-heading company-heading" data-animate>
+          <div><p class="kicker">Current role / AI Engineer</p><h2 id="azentio-title">Building at Azentio</h2></div>
+          <p>I build AI assistants for insurance support, test how they behave before release, and mentor interns working on agent launches across products.</p>
+        </div>
+        <div class="company-grid">
+          <article class="company-project" data-animate>
+            <p class="label">Product launch</p>
+            <h3>Insurance support agent launch</h3>
+            <p>I helped launch an insurance support assistant. It handles routine questions and gives engineers a starting point for cases that need investigation.</p>
+          </article>
+          <article class="company-project" data-animate>
+            <p class="label">Agent architecture</p>
+            <h3>Legacy insurance support agent</h3>
+            <p>I designed and maintain an agent for a second insurance product. I worked out how it could use older application artifacts so engineers could investigate issues in the legacy product.</p>
+          </article>
+          <article class="company-project" data-animate>
+            <p class="label">Quality engineering</p>
+            <h3>Agent testing and audit validation</h3>
+            <p>I automated tests for common support scenarios and built a harness to review AI-generated audit findings. The tests let teams compare agent responses across releases, and the harness gave reviewers product context to check each report.</p>
+          </article>
+          <article class="company-project" data-animate>
+            <p class="label">Infrastructure</p>
+            <h3>Agent service migration</h3>
+            <p>I helped move agent services to a new hosting environment and verified the ticketing integration there, so support workflows could continue after the move.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <section class="section wrap" id="projects" aria-labelledby="projects-title">
-      <div class="section-heading">
-        <div><p class="kicker">Research &amp; engineering</p><h2 id="projects-title">Selected work</h2></div>
+      <div class="section-heading" data-animate>
+        <div><p class="kicker">Research &amp; engineering</p><h2 id="projects-title">Selected projects</h2></div>
         <a class="text-link" href="https://github.com/Upeshjeengar?tab=repositories" target="_blank" rel="noopener noreferrer">All repositories</a>
       </div>
-      <div class="workbench">
+      <div class="workbench" data-animate>
         <div class="work-tabs" hidden>
           <button type="button" id="tab-vlm" aria-controls="case-vlm">Vision-language model</button>
           <button type="button" id="tab-physics" aria-controls="case-physics">Physics-informed ML</button>
@@ -119,7 +152,7 @@
 
     <section class="experience" id="work" aria-labelledby="work-title">
       <div class="wrap section">
-        <div class="section-heading">
+        <div class="section-heading" data-animate>
           <div><p class="kicker">Education &amp; work</p><h2 id="work-title">My background</h2></div>
           <a class="text-link" href="https://www.linkedin.com/in/upesh-jeengar" target="_blank" rel="noopener noreferrer">LinkedIn profile</a>
         </div>
@@ -142,7 +175,7 @@
     </section>
 
     <section class="section wrap about" id="about" aria-labelledby="about-title">
-      <div class="about-copy">
+      <div class="about-copy" data-animate>
         <p class="kicker">A little more about me</p>
         <h2 id="about-title">Outside work</h2>
         <p>I tend to learn by implementing things, whether that's a model from a paper or an ML pipeline I can deploy. I keep my notes and experiments on GitHub and write about the parts I want to understand better.</p>
@@ -165,7 +198,7 @@
 
     <section class="writing" id="blogs" aria-labelledby="writing-title">
       <div class="wrap section">
-        <div class="section-heading">
+        <div class="section-heading" data-animate>
           <div><p class="kicker">Articles &amp; notes</p><h2 id="writing-title">Writing</h2></div>
           <a class="text-link" href="blogs/ml-system-design-part-1.html">ML System Design series</a>
         </div>
